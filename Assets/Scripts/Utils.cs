@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Utils
 {
+    // Code copy / paste from internet
     public static bool LineLineIntersection(out Vector3 intersection, Vector3 linePoint1,
         Vector3 lineVec1, Vector3 linePoint2, Vector3 lineVec2){
 
