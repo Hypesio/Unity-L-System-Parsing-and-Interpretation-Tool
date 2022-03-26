@@ -6,10 +6,6 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class VegetationGeneration : MonoBehaviour
 {
-    public bool generateVegetation;
-
-    public int nbIteration;
-
     [System.Serializable]
     public struct Rule
     {
@@ -17,14 +13,27 @@ public class VegetationGeneration : MonoBehaviour
         public string application;
     }
 
+    public static char[] rotationChar = {'+', '-', '\\', '/', '|', '&', '∧'};
+
+    public bool generateVegetation;
+    public int nbIteration;
+
+    [Header("Grammar")]
     [SerializeField]
     public Rule[] rules;
+    public string startSentence;
 
+    [Header("Mesh Options")]
+    public bool orientation3D;
     public float angleTheta = 90;
     public float lengthPart = 2;
-    public string startSentence;
     public float radiusBranch = 0.3f;
+    public int nbFacePerCylinder = 4;
+
+    [Header("Other options")]
     public float timeSpawnBranch = 0.2f;
+
+
 
     // Update is called once per frame
     void Update()
@@ -36,7 +45,7 @@ public class VegetationGeneration : MonoBehaviour
             generateVegetation = false;
             string grammarApplied = GrammarInterpretation.ApplyGrammar(dicoRules, startSentence, nbIteration);
             Debug.Log(grammarApplied);
-            MeshGestion.Instance.GenerateMeshFromSentence(grammarApplied, lengthPart, angleTheta, radiusBranch, timeSpawnBranch);
+            MeshGestion.Instance.GenerateMeshFromSentence(grammarApplied, lengthPart, angleTheta, radiusBranch, timeSpawnBranch, nbFacePerCylinder, orientation3D);
         }
         #endif
     }

@@ -6,9 +6,19 @@
     <e p="C:\Users\aubin\Documents\GitHub\SYNT-Project" t="IncludeRecursive">
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
-        <e p="GenerateCylinder.cs" t="Include" />
-        <e p="MeshGestion.cs" t="Include" />
-        <e p="Utils.cs" t="Include" />
+        <e p="Scripts" t="Include">
+          <e p="Grammar" t="Include">
+            <e p="GrammarInterpretation.cs" t="Include" />
+            <e p="GrammarUtils.cs" t="Include" />
+          </e>
+          <e p="Mesh" t="Include">
+            <e p="GenerateCylinder.cs" t="Include" />
+            <e p="MeshGestion.cs" t="Include" />
+          </e>
+          <e p="SerializableDictionnary.cs" t="Include" />
+          <e p="Utils.cs" t="Include" />
+          <e p="VegetationGeneration.cs" t="Include" />
+        </e>
       </e>
       <e p="obj" t="ExcludeRecursive" />
       <e p="Packages" t="ExcludeRecursive" />

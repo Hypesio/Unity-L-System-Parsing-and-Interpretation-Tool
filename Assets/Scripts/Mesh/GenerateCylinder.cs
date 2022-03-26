@@ -63,10 +63,10 @@ public class GenerateCylinder
             SpawnCylinderFace(centerBot, centerTop, angleToAdd * i, faceWidthBot, faceWidthTop);
         }
 
-        if (buildingACone)
+        /*if (buildingACone)
             Debug.Log("Cone generated: Start pos "  + centerBot + " End pos" + centerTop);
         else
-            Debug.Log("Cylinder generated: Start pos "  + centerBot + " End pos" + centerTop);
+            Debug.Log("Cylinder generated: Start pos "  + centerBot + " End pos" + centerTop);*/
         return new CylinderInfos() {triangles = newTriangles, vertices = newVertices, topVertices = newTopVertices};
     }
 

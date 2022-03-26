@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using CylinderInfos = GenerateCylinder.CylinderInfos;
@@ -16,26 +17,22 @@ public class MeshGestion : MonoBehaviour
     public float startRadius = 0.3f;
     public int cylinderNbFaces = 15;
 
+
     private Mesh meshGenerated;
     private MeshFilter meshFilter;
+    private bool spawn3DShape = false;
 
     struct TurtleInfos
     {
         public Vector3 position;
-        public Vector3 orientation;
+        // Heading, Left, Up
+        public Vector3[] hlu;
 
-        public TurtleInfos(Vector3 _pos, Vector3 _or)
+        public TurtleInfos(Vector3 _pos, Vector3[] _hlu)
         {
             position = _pos;
-            orientation = _or;
+            hlu = _hlu;
         }
-    }
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        InitMesh();
     }
 
     // Update is called once per frame
@@ -94,8 +91,10 @@ public class MeshGestion : MonoBehaviour
     }
 
     // Generate the mesh using DOL-bracket method
-    public void GenerateMeshFromSentence(string sentence, float lengthPart, float angleTheta, float radiusBranch, float timeBetweenBranch)
+    public void GenerateMeshFromSentence(string sentence, float lengthPart, float angleTheta, float radiusBranch, float timeBetweenBranch, int _cylinderNbFaces = 4, bool orientation3D = true)
     {
+        cylinderNbFaces = _cylinderNbFaces;
+        spawn3DShape = orientation3D;
         StopAllCoroutines();
         InitMesh();
         StartCoroutine(IGenerateMeshFromSentence(sentence, lengthPart, angleTheta, radiusBranch, timeBetweenBranch));
@@ -104,7 +103,11 @@ public class MeshGestion : MonoBehaviour
     IEnumerator IGenerateMeshFromSentence(string sentence, float lengthPart, float angleTheta, float radiusBranch, float timeBetweenBranch)
     {
         Vector3 turtlePosition = Vector3.zero;
-        Vector3 turtleOrientation = Vector3.up;
+        Vector3[] turtleOrientation = new[] {Vector3.forward, Vector3.left, Vector3.right};
+        if (!spawn3DShape)
+        {
+            turtleOrientation[0] = Vector3.up;
+        }
         Stack<TurtleInfos> turtleStack = new Stack<TurtleInfos>();
 
         foreach (var c in sentence)
@@ -117,20 +120,20 @@ public class MeshGestion : MonoBehaviour
             {
                 TurtleInfos newInfos = turtleStack.Pop();
                 turtlePosition = newInfos.position;
-                turtleOrientation = newInfos.orientation;
+                turtleOrientation = newInfos.hlu;
             }
-            else if (c == '+') // Rotate +theta (2D rotation)
+            else if (VegetationGeneration.rotationChar.Contains(c))
             {
-                turtleOrientation = rotate2DVector(turtleOrientation, angleTheta);
-            }
-            else if (c == '-') // Rotate -theta (2D rotation)
-            {
-                turtleOrientation = rotate2DVector(turtleOrientation, -angleTheta);
+                // Rotate the vector. Change only the heading if in 2D
+                if (spawn3DShape)
+                    turtleOrientation = Utils.rotate3DVector(turtleOrientation, angleTheta, c);
+                else
+                    turtleOrientation[0] = Utils.rotate2DVector(turtleOrientation[0], angleTheta, c);
             }
             else
             {
                 Vector3 startPoint = turtlePosition;
-                turtlePosition += turtleOrientation.normalized * lengthPart;
+                turtlePosition += turtleOrientation[0].normalized * lengthPart;
                 Vector3 endPoint = turtlePosition;
 
                 CylinderInfos newCylinder = GenerateCylinder.CreateCylinder(meshGenerated.vertices, meshGenerated.triangles, startPoint, endPoint, radiusBranch, radiusBranch);
@@ -148,11 +151,5 @@ public class MeshGestion : MonoBehaviour
         }
     }
 
-    public Vector3 rotate2DVector(Vector3 or, float angle)
-    {
-        float radAngle = angle * Mathf.Deg2Rad;
-        or.x = or.x * Mathf.Cos(radAngle) - or.y * Mathf.Sin(radAngle);
-        or.y = or.x * Mathf.Sin(radAngle) + or.y * Mathf.Cos(radAngle);
-        return or;
-    }
+
 }
