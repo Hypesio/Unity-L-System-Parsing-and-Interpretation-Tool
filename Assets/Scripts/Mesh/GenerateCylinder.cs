@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class GenerateCylinder
 {
-    public struct CylinderInfos
+    public class CylinderInfos
     {
         public List<int> triangles;
         public List<Vector3> vertices;
@@ -21,24 +21,27 @@ public class GenerateCylinder
 
     // Top vertices are useful to "connect" a cylinder to another
     private static List<(Vector3, int)> newTopVertices;
-    private static List<Vector3> previousTopVertices;
 
     private static Vector3 actualUp;
     private static Vector3 actualForward;
     private static float radiusBot;
     private static float radiusTop;
     private static bool buildingACone = false;
+    private static CylinderInfos previousCylinder;
+    private static int indexTopPreviousCylinder;
 
     // Spawn a cylinder
     // Centers of top and bottom have to be in local space coordinate
-    public static CylinderInfos CreateCylinder(Vector3[] vertices, int[] triangles, Vector3 centerBot, Vector3 centerTop, float _radiusBot, float _radiusTop)
+    public static CylinderInfos CreateCylinder(List<Vector3> vertices, List<int> triangles, Vector3 centerBot, Vector3 centerTop, float _radiusBot, float _radiusTop, CylinderInfos previousCylinder)
     {
+        GenerateCylinder.previousCylinder = previousCylinder;
+        indexTopPreviousCylinder = 0;
         radiusBot = _radiusBot;
         radiusTop = _radiusTop;
 
+        newVertices = vertices;
+        newTriangles = triangles;
         newTopVertices = new List<(Vector3, int)>();
-        newVertices = vertices.ToList();
-        newTriangles = triangles.ToList();
 
         buildingACone = radiusTop < 0.0001f;
         if (buildingACone)
@@ -63,10 +66,6 @@ public class GenerateCylinder
             SpawnCylinderFace(centerBot, centerTop, angleToAdd * i, faceWidthBot, faceWidthTop);
         }
 
-        /*if (buildingACone)
-            Debug.Log("Cone generated: Start pos "  + centerBot + " End pos" + centerTop);
-        else
-            Debug.Log("Cylinder generated: Start pos "  + centerBot + " End pos" + centerTop);*/
         return new CylinderInfos() {triangles = newTriangles, vertices = newVertices, topVertices = newTopVertices};
     }
 
@@ -96,8 +95,6 @@ public class GenerateCylinder
     // Add vertices and triangles to the mesh for one face of the cylinder
     static void SpawnCylinderFace(Vector3 centerBot, Vector3 centerTop, float angleToAdd, float faceWidthBot, float faceWidthTop)
     {
-        // TODO take into account previous vertices to diminue number of vertices created
-
         Vector3 faceBotCenter = centerBot + Quaternion.AngleAxis(angleToAdd, actualUp) * actualForward * radiusBot;
         Vector3 faceTopCenter = centerTop + Quaternion.AngleAxis(angleToAdd, actualUp) * actualForward * radiusTop;
 
@@ -116,24 +113,36 @@ public class GenerateCylinder
             newVertices.Add(top2);
         }
 
-        int[] trianglesPoints = new int[]{};
-        if (previousTopVertices == null)
+        Vector3 bottom1 = (faceBotCenter + faceRightBot * faceWidthBot / 2);
+        Vector3 bottom2 = (faceBotCenter - faceRightBot * faceWidthBot / 2);
+        int[] trianglesPoints;
+        if (previousCylinder == null)
         {
-            newVertices.Add((faceBotCenter + faceRightBot * faceWidthBot / 2));
-            newVertices.Add((faceBotCenter - faceRightBot * faceWidthBot / 2));
+            newVertices.Add(bottom1);
+            newVertices.Add(bottom2);
             trianglesPoints = new int[] {verticeStartIndex, verticeStartIndex + 1,verticeStartIndex + 2, verticeStartIndex, verticeStartIndex + 2, verticeStartIndex + 3};
         }
         else
         {
-            trianglesPoints = new int[] {verticeStartIndex, verticeStartIndex + 1,verticeStartIndex + 2, verticeStartIndex, verticeStartIndex + 2, verticeStartIndex + 3};
+            trianglesPoints = new int[] {verticeStartIndex, verticeStartIndex + 1, GetClosestTopVertex(bottom1), verticeStartIndex, GetClosestTopVertex(bottom1), GetClosestTopVertex(bottom2)};
+            indexTopPreviousCylinder += 2;
         }
 
         // 2. Create triangles
         if (buildingACone)
         {
-            int topVertice = newTopVertices[0].Item2;
-            trianglesPoints = new int[]
-                {newTopVertices[0].Item2,  verticeStartIndex, verticeStartIndex + 1};
+            if (previousCylinder != null)
+            {
+                trianglesPoints = new int[]
+                {
+                    newTopVertices[0].Item2, previousCylinder.topVertices[indexTopPreviousCylinder].Item2,
+                    previousCylinder.topVertices[indexTopPreviousCylinder + 1].Item2
+                };
+                indexTopPreviousCylinder++;
+            }
+            else
+                trianglesPoints = new int[]
+                    {newTopVertices[0].Item2,  verticeStartIndex, verticeStartIndex + 1};
         }
 
         foreach (int index in trianglesPoints)
@@ -143,23 +152,21 @@ public class GenerateCylinder
 
     }
 
-    /*private void OnDrawGizmos()
+    private static int GetClosestTopVertex(Vector3 vertex)
     {
-        Gizmos.color = Color.green;
-        Gizmos.DrawRay(transform.position, actualUp * 5);
-        Gizmos.DrawRay(transform.position, actualForward * 5);
+        int closestOne = 0;
+        float minDistance = int.MaxValue;
+        for (int i = 0; i < previousCylinder.topVertices.Count; i++)
+        {
+            float dist = Vector3.Distance(vertex, previousCylinder.topVertices[i].Item1);
+            if (dist < minDistance)
+            {
+                minDistance = dist;
+                closestOne = previousCylinder.topVertices[i].Item2;
+            }
+        }
 
-        Gizmos.color = Color.cyan;
-        float angleToAdd = (float)360 / nbFaces;
+        return closestOne;
+    }
 
-        Vector3 face1Pos = transform.position + Quaternion.AngleAxis(angleToAdd, actualUp) * actualForward * radiusBot;
-        Vector3 face1Left = -Vector3.Cross((face1Pos - transform.position), actualUp);
-        Vector3 facePos = transform.position + actualForward * radiusBot;
-        Vector3 faceLeft = -Vector3.Cross(actualUp, actualForward);
-
-        Gizmos.DrawRay(face1Pos, face1Left * 3);
-        Gizmos.color = Color.blue;
-        Gizmos.DrawRay(facePos, faceLeft * 3);
-
-    }*/
 }

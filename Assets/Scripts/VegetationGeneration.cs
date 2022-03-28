@@ -29,6 +29,10 @@ public class VegetationGeneration : MonoBehaviour
     public float lengthPart = 2;
     public float radiusBranch = 0.3f;
     public int nbFacePerCylinder = 4;
+    public float decrementRadiusMultiplier = 0.9f;
+
+    [Header("Colors")]
+    public Color32[] colors;
 
     [Header("Other options")]
     public float timeSpawnBranch = 0.2f;
@@ -45,7 +49,7 @@ public class VegetationGeneration : MonoBehaviour
             generateVegetation = false;
             string grammarApplied = GrammarInterpretation.ApplyGrammar(dicoRules, startSentence, nbIteration);
             Debug.Log(grammarApplied);
-            MeshGestion.Instance.GenerateMeshFromSentence(grammarApplied, lengthPart, angleTheta, radiusBranch, timeSpawnBranch, nbFacePerCylinder, orientation3D);
+            MeshGestion.Instance.GenerateMeshFromSentence(grammarApplied, lengthPart, angleTheta, radiusBranch, timeSpawnBranch, nbFacePerCylinder, orientation3D, decrementRadiusMultiplier, colors);
         }
         #endif
     }

@@ -38,9 +38,12 @@ public class Utils
             angle = -angle;
         }
 
+        Vector3 prevOr = or;
         float radAngle = angle * Mathf.Deg2Rad;
+
         or.x = or.x * Mathf.Cos(radAngle) - or.y * Mathf.Sin(radAngle);
-        or.y = or.x * Mathf.Sin(radAngle) + or.y * Mathf.Cos(radAngle);
+        or.y = prevOr.x * Mathf.Sin(radAngle) + or.y * Mathf.Cos(radAngle);
+
         return or;
     }
 
@@ -111,7 +114,7 @@ public class Utils
         int communeSize = a.GetUpperBound(1) + 1;
         if (communeSize != b.GetUpperBound(0) + 1)
         {
-            throw new Exception("Error not good matrix format for multiplication");
+            throw new Exception("Error bad matrix format for multiplication");
         }
 
         float[,] res = new float[sizeH, sizeW];
