@@ -2,13 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a35e926e-c54f-4685-9192-23a1e6b4e9c5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.SYNT-Project/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.SYNT-Project/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.SYNT-Project/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.SYNT-Project/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Mesh/GenerateCylinder.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Mesh/GenerateCylinder.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Mesh/MeshGestion.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Mesh/MeshGestion.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Utils.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Utils.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/VegetationGeneration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/VegetationGeneration.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,15 +15,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Mesh/MeshGestion.cs" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="IdeDocumentHistory">
     <changedPaths>
       <option value="$PROJECT_DIR$/Assets/Utils.cs" />
       <option value="$PROJECT_DIR$/Assets/MeshGestion.cs" />
       <option value="$PROJECT_DIR$/Assets/GenerateCylinder.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/Mesh/GenerateCylinder.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/VegetationGeneration.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/Mesh/MeshGestion.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/Utils.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/Mesh/GenerateCylinder.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/Mesh/MeshGestion.cs" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="26TS42K4hwzdmdeJpTFrQJK2DRx" />
@@ -73,6 +73,8 @@
       <workItem from="1647461279391" duration="1286000" />
       <workItem from="1647522217824" duration="777000" />
       <workItem from="1648125121000" duration="11400000" />
+      <workItem from="1648476209480" duration="8239000" />
+      <workItem from="1648495682052" duration="5592000" />
     </task>
     <servers />
   </component>

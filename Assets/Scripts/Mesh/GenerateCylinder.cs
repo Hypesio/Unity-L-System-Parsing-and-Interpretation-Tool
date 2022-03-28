@@ -19,7 +19,6 @@ public class GenerateCylinder
     private static List<int> newTriangles;
     private static List<Vector3> newVertices;
 
-    // Top vertices are useful to "connect" a cylinder to another
     private static List<(Vector3, int)> newTopVertices;
 
     private static Vector3 actualUp;
@@ -152,6 +151,7 @@ public class GenerateCylinder
 
     }
 
+    // Get the closest vertex from previous cylinder
     private static int GetClosestTopVertex(Vector3 vertex)
     {
         int closestOne = 0;

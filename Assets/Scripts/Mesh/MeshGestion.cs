@@ -15,7 +15,6 @@ public class MeshGestion : MonoBehaviour
     public bool cleanMesh;
     public int cylinderNbFaces = 15;
 
-
     private Mesh meshGenerated;
     private MeshFilter meshFilter;
     private bool spawn3DShape = false;
@@ -24,7 +23,7 @@ public class MeshGestion : MonoBehaviour
     private List<int> meshTriangles;
     private List<Color32> meshColors;
 
-    struct TurtleInfos
+    class TurtleInfos
     {
         public Vector3 position;
         // Heading, Left, Up
@@ -40,6 +39,16 @@ public class MeshGestion : MonoBehaviour
             radius = _radius;
             indexColor = _indexColor;
             previousCylinder = _previousCylinder;
+        }
+    }
+
+    class Polygon
+    {
+        public List<int> vertices;
+
+        public Polygon()
+        {
+            vertices = new List<int>();
         }
     }
 
@@ -78,79 +87,102 @@ public class MeshGestion : MonoBehaviour
         StartCoroutine(IGenerateMeshFromSentence(sentence, lengthPart, angleTheta, radiusBranch, timeBetweenBranch, decrementRadiusMultiplier, colors));
     }
 
+    // Coroutine to generate the mesh (will be progressive on play mode)
     IEnumerator IGenerateMeshFromSentence(string sentence, float lengthPart, float angleTheta, float radiusBranch, float timeBetweenBranch, float decrementRadiusMultiplier, Color32[] colors)
     {
         meshTriangles = new List<int>();
         meshVertices = new List<Vector3>();
         meshColors = new List<Color32>();
 
-        Vector3 turtlePosition = transform.position;
-        Vector3[] turtleOrientation = new[] {Vector3.up, Vector3.left, Vector3.forward};
-        float turtleRadius = radiusBranch;
-        int indexColor = 0;
-        CylinderInfos previousCylinder = null;
+        Vector3[] hlu = new[] {Vector3.up, Vector3.left, Vector3.forward};
+        TurtleInfos turtle = new TurtleInfos(transform.position, hlu, radiusBranch, 0, null);
+        int leafNumber = 0;
 
         Stack<TurtleInfos> turtleStack = new Stack<TurtleInfos>();
+        Polygon actualPolygon = null;
+        Stack<Polygon> polygons = new Stack<Polygon>();
 
         foreach (var c in sentence)
         {
             if (c == '[') // Push information on the stack
             {
-                turtleStack.Push(new TurtleInfos(turtlePosition, turtleOrientation, turtleRadius, indexColor, previousCylinder));
+                turtleStack.Push(turtle);
+                turtle = new TurtleInfos(turtle.position, turtle.hlu, turtle.radius, turtle.indexColor,
+                    turtle.previousCylinder);
             }
             else if (c == ']') // Unstack position to change
             {
                 TurtleInfos newInfos = turtleStack.Pop();
-                turtlePosition = newInfos.position;
-                turtleOrientation = newInfos.hlu;
-                turtleRadius = newInfos.radius;
-                indexColor = newInfos.indexColor;
-                previousCylinder = newInfos.previousCylinder;
+                turtle = newInfos;
             }
             else if (VegetationGeneration.rotationChar.Contains(c))
             {
                 //Debug.DrawRay(turtlePosition, turtleOrientation[0], Color.green, 2);
                 // Rotate the vector. Change only the heading if in 2D
                 if (spawn3DShape)
-                    turtleOrientation = Utils.rotate3DVector(turtleOrientation, angleTheta, c);
+                    turtle.hlu = Utils.rotate3DVector(turtle.hlu, angleTheta, c);
                 else
-                    turtleOrientation[0] = Utils.rotate2DVector(turtleOrientation[0], angleTheta, c);
+                    turtle.hlu[0] = Utils.rotate2DVector(turtle.hlu[0], angleTheta, c);
 
                 //Debug.DrawRay(turtlePosition, turtleOrientation[0], Color.cyan, 2);
             }
             else if (c == '!') // Decrement segment radius
             {
-                turtleRadius *= decrementRadiusMultiplier;
+                turtle.radius *= decrementRadiusMultiplier;
             }
-            else if (c == '\'')
+            else if (c == '\'') // Change vertice color
             {
                 if (colors.Length == 0)
                 {
                     Debug.LogError("[MeshGestion] You have to specify a color list!");
                     continue;
                 }
-                indexColor++;
-                if (indexColor >= colors.Length)
-                    indexColor = 0;
+
+                turtle.indexColor++;
+                if (turtle.indexColor >= colors.Length)
+                    turtle.indexColor = 0;
             }
-            else
+            else if (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z')
             {
-                Vector3 startPoint = turtlePosition;
-                turtlePosition += turtleOrientation[0].normalized * lengthPart;
-                Vector3 endPoint = turtlePosition;
+                Vector3 startPoint = turtle.position;
+                turtle.position += turtle.hlu[0].normalized * lengthPart;
 
-                int oldVerticeCount = meshVertices.Count;
-                previousCylinder = GenerateCylinder.CreateCylinder(meshVertices, meshTriangles, startPoint, endPoint, turtleRadius,turtleRadius, previousCylinder);
-
-                meshColors.AddRange(Enumerable.Repeat(colors[indexColor], meshVertices.Count - oldVerticeCount));
-
-                if (timeBetweenBranch > 0 && Application.isPlaying) // Way to build the mesh progressively
+                if (leafNumber <= 0) // Create a cylinder
                 {
-                    meshGenerated.vertices = meshVertices.ToArray();
-                    meshGenerated.triangles = meshTriangles.ToArray();
-                    meshFilter.mesh = meshGenerated;
-                    yield return new WaitForSeconds(timeBetweenBranch);
+                    Vector3 endPoint = turtle.position;
+
+                    int oldVerticeCount = meshVertices.Count;
+                    turtle.previousCylinder = GenerateCylinder.CreateCylinder(meshVertices, meshTriangles, startPoint,
+                        endPoint, turtle.radius, turtle.radius, turtle.previousCylinder);
+
+                    meshColors.AddRange(Enumerable.Repeat(colors[turtle.indexColor], meshVertices.Count - oldVerticeCount));
+
+                    if (timeBetweenBranch > 0 && Application.isPlaying) // Way to build the mesh progressively
+                    {
+                        meshGenerated.vertices = meshVertices.ToArray();
+                        meshGenerated.triangles = meshTriangles.ToArray();
+                        meshFilter.mesh = meshGenerated;
+                        yield return new WaitForSeconds(timeBetweenBranch);
+                    }
                 }
+            }
+            else if (c == '{') // Start a new polygon
+            {
+                polygons.Push(actualPolygon);
+                actualPolygon = new Polygon();
+                leafNumber++;
+            }
+            else if (c == '}') // Draw the actual polygon
+            {
+                DrawPolygon(actualPolygon, meshTriangles);
+                actualPolygon = polygons.Pop();
+                leafNumber--;
+            }
+            if (c== '.') // Add vertice to polygon
+            {
+                meshVertices.Add(turtle.position);
+                meshColors.Add(colors[turtle.indexColor]);
+                actualPolygon.vertices.Add( meshVertices.Count - 1);
             }
         }
 
@@ -160,7 +192,24 @@ public class MeshGestion : MonoBehaviour
         meshGenerated.colors32 = meshColors.ToArray();
         meshGenerated.RecalculateNormals();
         meshFilter.mesh = meshGenerated;
+
+        Debug.Log("[MeshGestion] Mesh created with " + meshTriangles.Count/3 + " polygons");
     }
 
+    // Draw a polygon by dividing it in triangles
+    private void DrawPolygon(Polygon polygon, List<int> meshTriangles)
+    {
+        if (polygon.vertices.Count < 3)
+        {
+            Debug.LogError("[MeshGestion] Polygon has not enough vertices: " + polygon.vertices.Count);
+        }
+
+        for (int i = 1; i+1 < polygon.vertices.Count; i++)
+        {
+            meshTriangles.Add(polygon.vertices[0]);
+            meshTriangles.Add(polygon.vertices[i]);
+            meshTriangles.Add(polygon.vertices[i+1]);
+        }
+    }
 
 }

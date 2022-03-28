@@ -31,6 +31,7 @@ public class Utils
         }
     }
 
+    // Rotate a 2D vector according to the symbol used
     public static Vector3 rotate2DVector(Vector3 or, float angle, char symbol)
     {
         if (symbol == '-') // Rotate -theta (2D rotation)
@@ -107,6 +108,7 @@ public class Utils
         };
     }
 
+    // Multiply 2 float matrix together
     public static float[,] MultiplyMatrix(float[,] a, float[,] b)
     {
         int sizeH = a.GetUpperBound(0) + 1;
@@ -135,4 +137,6 @@ public class Utils
 
         return res;
     }
+
+
 }
