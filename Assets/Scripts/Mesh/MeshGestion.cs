@@ -10,10 +10,11 @@ using CylinderInfos = GenerateCylinder.CylinderInfos;
 [ExecuteInEditMode]
 public class MeshGestion : MonoBehaviour
 {
-    public static MeshGestion Instance;
 
     public bool cleanMesh;
     public int cylinderNbFaces = 15;
+
+    [HideInInspector] public Mesh meshToLoadOnStart;
 
     private Mesh meshGenerated;
     private MeshFilter meshFilter;
@@ -22,6 +23,7 @@ public class MeshGestion : MonoBehaviour
     private List<Vector3> meshVertices;
     private List<int> meshTriangles;
     private List<Color32> meshColors;
+    private float lengthPolygon;
 
     class TurtleInfos
     {
@@ -52,13 +54,20 @@ public class MeshGestion : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        if (meshToLoadOnStart)
+        {
+            gameObject.GetComponent<MeshFilter>().sharedMesh = meshToLoadOnStart;
+            meshGenerated = meshToLoadOnStart;
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
         #if UNITY_EDITOR
-        Instance = this;
-
-        if (!meshGenerated || cleanMesh)
+        if (!meshToLoadOnStart && cleanMesh)
         {
             InitMesh();
             cleanMesh = false;
@@ -78,10 +87,11 @@ public class MeshGestion : MonoBehaviour
     }
 
     // Generate the mesh using DOL-bracket method
-    public void GenerateMeshFromSentence(string sentence, float lengthPart, float angleTheta, float radiusBranch, float timeBetweenBranch, int _cylinderNbFaces, bool orientation3D, float decrementRadiusMultiplier, Color32[] colors)
+    public void GenerateMeshFromSentence(string sentence, float lengthPart, float angleTheta, float radiusBranch, float timeBetweenBranch, int _cylinderNbFaces, bool orientation3D, float decrementRadiusMultiplier, Color32[] colors, float _lengthPolygon)
     {
         cylinderNbFaces = _cylinderNbFaces;
         spawn3DShape = orientation3D;
+        lengthPolygon = _lengthPolygon;
         StopAllCoroutines();
         InitMesh();
         StartCoroutine(IGenerateMeshFromSentence(sentence, lengthPart, angleTheta, radiusBranch, timeBetweenBranch, decrementRadiusMultiplier, colors));
@@ -95,7 +105,7 @@ public class MeshGestion : MonoBehaviour
         meshColors = new List<Color32>();
 
         Vector3[] hlu = new[] {Vector3.up, Vector3.left, Vector3.forward};
-        TurtleInfos turtle = new TurtleInfos(transform.position, hlu, radiusBranch, 0, null);
+        TurtleInfos turtle = new TurtleInfos(Vector3.zero, hlu, radiusBranch, 0, null);
         int leafNumber = 0;
 
         Stack<TurtleInfos> turtleStack = new Stack<TurtleInfos>();
@@ -142,7 +152,7 @@ public class MeshGestion : MonoBehaviour
                 if (turtle.indexColor >= colors.Length)
                     turtle.indexColor = 0;
             }
-            else if (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z')
+            else if (c >= 'A' && c <= 'Z')
             {
                 Vector3 startPoint = turtle.position;
                 turtle.position += turtle.hlu[0].normalized * lengthPart;
@@ -178,8 +188,15 @@ public class MeshGestion : MonoBehaviour
                 actualPolygon = polygons.Pop();
                 leafNumber--;
             }
-            if (c== '.') // Add vertice to polygon
+            else if (c== '.') // Add vertice to polygon
             {
+                meshVertices.Add(turtle.position);
+                meshColors.Add(colors[turtle.indexColor]);
+                actualPolygon.vertices.Add( meshVertices.Count - 1);
+            }
+            else if (c >= 'a' && c <= 'z')
+            {
+                turtle.position += turtle.hlu[0].normalized * lengthPolygon;
                 meshVertices.Add(turtle.position);
                 meshColors.Add(colors[turtle.indexColor]);
                 actualPolygon.vertices.Add( meshVertices.Count - 1);

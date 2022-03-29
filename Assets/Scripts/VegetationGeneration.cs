@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 [ExecuteInEditMode]
@@ -15,43 +16,53 @@ public class VegetationGeneration : MonoBehaviour
 
     public static char[] rotationChar = {'+', '-', '\\', '/', '|', '&', '∧'};
 
-    public bool generateVegetation;
+
+    public VegetationPreset vegetationPreset;
+
     public int nbIteration;
 
-    [Header("Grammar")]
-    [SerializeField]
-    public Rule[] rules;
+    [Header("Grammar")] [SerializeField] public Rule[] rules;
     public string startSentence;
 
-    [Header("Mesh Options")]
-    public bool orientation3D;
+    [Header("Mesh Options")] public bool orientation3D;
     public float angleTheta = 90;
     public float lengthPart = 2;
+    public float lengthPolygon;
     public float radiusBranch = 0.3f;
     public int nbFacePerCylinder = 4;
     public float decrementRadiusMultiplier = 0.9f;
 
-    [Header("Colors")]
-    public Color32[] colors;
+    [Header("Colors")] public Color32[] colors;
 
-    [Header("Other options")]
-    public float timeSpawnBranch = 0.2f;
+    [Header("Other options")] public float timeSpawnBranch = 0.2f;
+    public GameObject meshHandlerPrefab;
 
+    [HideInInspector]
+    public MeshGestion actualMesh;
 
+    private Transform treeParents;
 
-    // Update is called once per frame
-    void Update()
+    public void GenerateVegetation(bool newMesh = false)
     {
-        #if UNITY_EDITOR
-        if (generateVegetation)
+        if (newMesh || !actualMesh)
         {
-            var dicoRules = BuildDictionnary(rules);
-            generateVegetation = false;
-            string grammarApplied = GrammarInterpretation.ApplyGrammar(dicoRules, startSentence, nbIteration);
-            Debug.Log(grammarApplied);
-            MeshGestion.Instance.GenerateMeshFromSentence(grammarApplied, lengthPart, angleTheta, radiusBranch, timeSpawnBranch, nbFacePerCylinder, orientation3D, decrementRadiusMultiplier, colors);
+            if (actualMesh)
+            {
+                if (!treeParents)
+                    treeParents = Instantiate(new GameObject("TreeParent")).transform;
+                actualMesh.transform.parent = treeParents;
+            }
+
+            if (vegetationPreset)
+                meshHandlerPrefab.name = vegetationPreset.name;
+            actualMesh = Instantiate(meshHandlerPrefab, transform.position, Quaternion.identity, this.transform).GetComponent<MeshGestion>();
         }
-        #endif
+
+        var dicoRules = BuildDictionnary(rules);
+        string grammarApplied = GrammarInterpretation.ApplyGrammar(dicoRules, startSentence, nbIteration);
+        Debug.Log(grammarApplied);
+        actualMesh.GenerateMeshFromSentence(grammarApplied, lengthPart, angleTheta, radiusBranch,
+            timeSpawnBranch, nbFacePerCylinder, orientation3D, decrementRadiusMultiplier, colors, lengthPolygon);
     }
 
     Dictionary<char, string> BuildDictionnary(Rule[] _rules)
@@ -64,4 +75,5 @@ public class VegetationGeneration : MonoBehaviour
 
         return res;
     }
+
 }

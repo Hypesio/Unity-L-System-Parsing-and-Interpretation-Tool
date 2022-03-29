@@ -4,9 +4,13 @@
     <e p="C:\Users\aubin\AppData\Local\JetBrains\Rider2020.3\extResources" t="IncludeRecursive" />
     <e p="C:\Users\aubin\AppData\Local\JetBrains\Rider2020.3\resharper-host\Local\Transient\Rider\v203\SolutionCaches\_SYNT-Project.-1938654819.00" t="ExcludeRecursive" />
     <e p="C:\Users\aubin\Documents\GitHub\SYNT-Project" t="IncludeRecursive">
+      <e p="Assembly-CSharp-Editor.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
         <e p="Scripts" t="Include">
+          <e p="Editor" t="Include">
+            <e p="VegetationGenerationEditor.cs" t="Include" />
+          </e>
           <e p="Grammar" t="Include">
             <e p="GrammarInterpretation.cs" t="Include" />
             <e p="GrammarUtils.cs" t="Include" />
@@ -18,6 +22,7 @@
           <e p="SerializableDictionnary.cs" t="Include" />
           <e p="Utils.cs" t="Include" />
           <e p="VegetationGeneration.cs" t="Include" />
+          <e p="VegetationPreset.cs" t="Include" />
         </e>
       </e>
       <e p="obj" t="ExcludeRecursive" />
