@@ -112,8 +112,9 @@ public class MeshGestion : MonoBehaviour
         Polygon actualPolygon = null;
         Stack<Polygon> polygons = new Stack<Polygon>();
 
-        foreach (var c in sentence)
+        for (int i =0; i < sentence.Length; i ++)
         {
+            char c = sentence[i];
             if (c == '[') // Push information on the stack
             {
                 turtleStack.Push(turtle);
@@ -155,7 +156,15 @@ public class MeshGestion : MonoBehaviour
             else if (c >= 'A' && c <= 'Z')
             {
                 Vector3 startPoint = turtle.position;
-                turtle.position += turtle.hlu[0].normalized * lengthPart;
+                int cPassed = 0;
+                while (c >= 'A' && c <= 'Z') // Way to merge consecutive cylinder and reduce vertex count
+                {
+                    turtle.position += turtle.hlu[0].normalized * lengthPart;
+                    cPassed++;
+                    c = sentence[i+cPassed];
+                }
+
+                i += cPassed - 1;
 
                 if (leafNumber <= 0) // Create a cylinder
                 {
