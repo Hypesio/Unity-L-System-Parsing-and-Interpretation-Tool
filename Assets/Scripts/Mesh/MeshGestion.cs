@@ -161,6 +161,8 @@ public class MeshGestion : MonoBehaviour
                 {
                     turtle.position += turtle.hlu[0].normalized * lengthPart;
                     cPassed++;
+                    if (i + cPassed >= sentence.Length)
+                        break;
                     c = sentence[i+cPassed];
                 }
 

@@ -10,7 +10,7 @@ public class VegetationGeneration : MonoBehaviour
     [System.Serializable]
     public struct Rule
     {
-        public char character;
+        public string prod;
         public string application;
     }
 
@@ -58,22 +58,11 @@ public class VegetationGeneration : MonoBehaviour
             actualMesh = Instantiate(meshHandlerPrefab, transform.position, Quaternion.identity, this.transform).GetComponent<MeshGestion>();
         }
 
-        var dicoRules = BuildDictionnary(rules);
-        string grammarApplied = GrammarInterpretation.ApplyGrammar(dicoRules, startSentence, nbIteration);
-        Debug.Log(grammarApplied);
+        string grammarApplied = GrammarInterpretation.ApplyGrammar(rules, startSentence, nbIteration);
         actualMesh.GenerateMeshFromSentence(grammarApplied, lengthPart, angleTheta, radiusBranch,
             timeSpawnBranch, nbFacePerCylinder, orientation3D, decrementRadiusMultiplier, colors, lengthPolygon);
     }
 
-    Dictionary<char, string> BuildDictionnary(Rule[] _rules)
-    {
-        Dictionary<char, string> res = new Dictionary<char, string>();
-        for (int i = 0; i < _rules.Length; i++)
-        {
-            res.Add(_rules[i].character, _rules[i].application);
-        }
 
-        return res;
-    }
 
 }
