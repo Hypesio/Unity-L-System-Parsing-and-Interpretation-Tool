@@ -12,6 +12,8 @@
             <e p="VegetationGenerationEditor.cs" t="Include" />
           </e>
           <e p="Grammar" t="Include">
+            <e p="ExpressionExecution.cs" t="Include" />
+            <e p="ExpressionParsing.cs" t="Include" />
             <e p="GrammarInterpretation.cs" t="Include" />
             <e p="GrammarUtils.cs" t="Include" />
           </e>
@@ -20,6 +22,9 @@
             <e p="MeshGestion.cs" t="Include" />
           </e>
           <e p="SerializableDictionnary.cs" t="Include" />
+          <e p="Tests" t="Include">
+            <e p="GrammarTests.cs" t="Include" />
+          </e>
           <e p="Utils.cs" t="Include" />
           <e p="VegetationGeneration.cs" t="Include" />
           <e p="VegetationPreset.cs" t="Include" />

@@ -42,7 +42,7 @@ public class GenerateCylinder
         newTriangles = triangles;
         newTopVertices = new List<(Vector3, int)>();
 
-        buildingACone = radiusTop < 0.0001f;
+        buildingACone = Mathf.Approximately(radiusTop, 0);
         if (buildingACone)
         {
             newTopVertices.Add((centerTop, newVertices.Count));
@@ -87,7 +87,7 @@ public class GenerateCylinder
             return (intersectPoint - face1Pos).magnitude * 2;
         }
 
-        Debug.LogError("Impossible to compute facewidth! Around point: " + center);
+        Debug.LogError("Impossible to compute facewidth! Around point: " + center +  " with radius " + radius);
         return 0;
     }
 

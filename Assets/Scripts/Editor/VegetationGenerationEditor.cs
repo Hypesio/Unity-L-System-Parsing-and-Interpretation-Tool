@@ -62,8 +62,10 @@ public class VegetationGenerationEditor : Editor
     // Call to apply the preset -> to change value in the inspector
     private void LoadPreset()
     {
+        script.nbIteration = script.vegetationPreset.nbIteration;
         script.rules = script.vegetationPreset.rules;
-        script.startSentence = script.vegetationPreset.startSentence;
+        script.defines = script.vegetationPreset.defines;
+        script.axiom = script.vegetationPreset.axiom;
         script.orientation3D = script.vegetationPreset.orientation3D;
         script.angleTheta = script.vegetationPreset.angleTheta;
         script.lengthPart = script.vegetationPreset.lengthPart;
@@ -78,8 +80,10 @@ public class VegetationGenerationEditor : Editor
     // Call to save the actual preset to the scriptable Object
     private void SavePreset()
     {
+        script.vegetationPreset.nbIteration = script.nbIteration;
         script.vegetationPreset.rules = script.rules;
-        script.vegetationPreset.startSentence = script.startSentence;
+        script.vegetationPreset.axiom = script.axiom;
+        script.vegetationPreset.defines = script.defines;
         script.vegetationPreset.orientation3D = script.orientation3D;
         script.vegetationPreset.angleTheta = script.angleTheta;
         script.vegetationPreset.lengthPart = script.lengthPart;

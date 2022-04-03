@@ -1,28 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
-
+using Rule = GrammarInterpretation.Rule;
+using Define = GrammarInterpretation.Define;
 [ExecuteInEditMode]
 public class VegetationGeneration : MonoBehaviour
 {
-    [System.Serializable]
-    public struct Rule
-    {
-        public string prod;
-        public string application;
-    }
-
-    public static char[] rotationChar = {'+', '-', '\\', '/', '|', '&', '∧'};
-
+    public static char[] rotationChar = {'+', '-', '\\', '/', '|', '&', '∧', '^', '$'};
 
     public VegetationPreset vegetationPreset;
 
     public int nbIteration;
 
-    [Header("Grammar")] [SerializeField] public Rule[] rules;
-    public string startSentence;
+    [Header("Grammar")] public string axiom;
+    [SerializeField] public Rule[] rules;
+    public Define[] defines;
 
     [Header("Mesh Options")] public bool orientation3D;
     public float angleTheta = 90;
@@ -58,7 +48,7 @@ public class VegetationGeneration : MonoBehaviour
             actualMesh = Instantiate(meshHandlerPrefab, transform.position, Quaternion.identity, this.transform).GetComponent<MeshGestion>();
         }
 
-        string grammarApplied = GrammarInterpretation.ApplyGrammar(rules, startSentence, nbIteration);
+        string grammarApplied = GrammarInterpretation.ApplyGrammar(rules, defines, axiom, nbIteration);
         actualMesh.GenerateMeshFromSentence(grammarApplied, lengthPart, angleTheta, radiusBranch,
             timeSpawnBranch, nbFacePerCylinder, orientation3D, decrementRadiusMultiplier, colors, lengthPolygon);
     }

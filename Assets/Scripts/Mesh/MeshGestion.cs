@@ -1,9 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using TMPro;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 using CylinderInfos = GenerateCylinder.CylinderInfos;
 
@@ -24,6 +23,7 @@ public class MeshGestion : MonoBehaviour
     private List<int> meshTriangles;
     private List<Color32> meshColors;
     private float lengthPolygon;
+    private Color32[] colors;
 
     class TurtleInfos
     {
@@ -103,7 +103,7 @@ public class MeshGestion : MonoBehaviour
         meshTriangles = new List<int>();
         meshVertices = new List<Vector3>();
         meshColors = new List<Color32>();
-
+        this.colors = colors;
         Vector3[] hlu = new[] {Vector3.up, Vector3.left, Vector3.forward};
         TurtleInfos turtle = new TurtleInfos(Vector3.zero, hlu, radiusBranch, 0, null);
         int leafNumber = 0;
@@ -112,9 +112,13 @@ public class MeshGestion : MonoBehaviour
         Polygon actualPolygon = null;
         Stack<Polygon> polygons = new Stack<Polygon>();
 
-        for (int i =0; i < sentence.Length; i ++)
+        for (int i = 0; i < sentence.Length; i ++)
         {
             char c = sentence[i];
+            if (c == '(') // Skip useless parenthesis number
+            {
+                GrammarInterpretation.GetWordUntilChar(sentence, ref i, new[] {')'});
+            }
             if (c == '[') // Push information on the stack
             {
                 turtleStack.Push(turtle);
@@ -128,18 +132,19 @@ public class MeshGestion : MonoBehaviour
             }
             else if (VegetationGeneration.rotationChar.Contains(c))
             {
-                //Debug.DrawRay(turtlePosition, turtleOrientation[0], Color.green, 2);
+                float angle = GetNumberInParenthesis(sentence, ref i, angleTheta);
                 // Rotate the vector. Change only the heading if in 2D
                 if (spawn3DShape)
-                    turtle.hlu = Utils.rotate3DVector(turtle.hlu, angleTheta, c);
+                    turtle.hlu = Utils.rotate3DVector(turtle.hlu, angle, c);
                 else
-                    turtle.hlu[0] = Utils.rotate2DVector(turtle.hlu[0], angleTheta, c);
+                    turtle.hlu[0] = Utils.rotate2DVector(turtle.hlu[0], angle, c);
 
-                //Debug.DrawRay(turtlePosition, turtleOrientation[0], Color.cyan, 2);
             }
             else if (c == '!') // Decrement segment radius
             {
-                turtle.radius *= decrementRadiusMultiplier;
+                float decrement = GetNumberInParenthesis(sentence, ref i, decrementRadiusMultiplier);
+                turtle.radius *= decrement;
+
             }
             else if (c == '\'') // Change vertice color
             {
@@ -153,22 +158,34 @@ public class MeshGestion : MonoBehaviour
                 if (turtle.indexColor >= colors.Length)
                     turtle.indexColor = 0;
             }
-            else if (c >= 'A' && c <= 'Z')
+            else if (c== 'F' || c == 'G')//(c >= 'A' && c <= 'Z')
             {
                 Vector3 startPoint = turtle.position;
-                int cPassed = 0;
-                while (c >= 'A' && c <= 'Z') // Way to merge consecutive cylinder and reduce vertex count
+                bool toBuild = c == 'F';
+                while (c >= 'A' && c <= 'Z' || c == '(') // Way to merge consecutive cylinder and reduce vertex count
                 {
-                    turtle.position += turtle.hlu[0].normalized * lengthPart;
-                    cPassed++;
-                    if (i + cPassed >= sentence.Length)
+                    if (c == '(')
+                    {
+                        GrammarInterpretation.GetWordUntilChar(sentence, ref i, new[] {')'});
+                        i++;
+                    }
+
+                    if (c == 'F')
+                    {
+                        float length = GetNumberInParenthesis(sentence, ref i, lengthPart);
+                        turtle.position += turtle.hlu[0].normalized * length;
+                        if (leafNumber > 0)
+                            RecordVertex(actualPolygon, turtle);
+                    }
+
+                    i++;
+                    if (i > sentence.Length)
                         break;
-                    c = sentence[i+cPassed];
+                    c = sentence[i];
                 }
+                i--;
 
-                i += cPassed - 1;
-
-                if (leafNumber <= 0) // Create a cylinder
+                if (toBuild) // Create a cylinder
                 {
                     Vector3 endPoint = turtle.position;
 
@@ -201,17 +218,15 @@ public class MeshGestion : MonoBehaviour
             }
             else if (c== '.') // Add vertice to polygon
             {
-                meshVertices.Add(turtle.position);
-                meshColors.Add(colors[turtle.indexColor]);
-                actualPolygon.vertices.Add( meshVertices.Count - 1);
+                RecordVertex(actualPolygon, turtle);
             }
-            else if (c >= 'a' && c <= 'z')
+            else if (c == 'f')
             {
                 turtle.position += turtle.hlu[0].normalized * lengthPolygon;
-                meshVertices.Add(turtle.position);
-                meshColors.Add(colors[turtle.indexColor]);
-                actualPolygon.vertices.Add( meshVertices.Count - 1);
+                if (leafNumber > 0)
+                    RecordVertex(actualPolygon, turtle);
             }
+
         }
 
         // Apply the mesh to make it visible
@@ -238,6 +253,25 @@ public class MeshGestion : MonoBehaviour
             meshTriangles.Add(polygon.vertices[i]);
             meshTriangles.Add(polygon.vertices[i+1]);
         }
+    }
+
+    private float GetNumberInParenthesis(string sentence, ref int index, float regularValue)
+    {
+        if (index + 1 < sentence.Length && sentence[index + 1] == '(')
+        {
+            index += 2;
+            string num = GrammarInterpretation.GetWordUntilChar(sentence, ref index, new[] {')'});
+            return float.Parse(num, CultureInfo.InvariantCulture);
+        }
+
+        return regularValue;
+    }
+
+    private void RecordVertex(Polygon poly, TurtleInfos turtle)
+    {
+        meshVertices.Add(turtle.position);
+        meshColors.Add(colors[turtle.indexColor]);
+        poly.vertices.Add( meshVertices.Count - 1);
     }
 
 }
