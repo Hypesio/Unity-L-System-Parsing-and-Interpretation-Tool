@@ -52,7 +52,7 @@ public class VegetationGenerationEditor : Editor
             GUILayout.Space(10);
             if (GUILayout.Button("Load Preset"))
                 LoadPreset();
-            if (GUILayout.Button("Save Preset"))
+            if (GUILayout.Button("Override Preset Values"))
                 SavePreset();
         }
 
@@ -93,6 +93,7 @@ public class VegetationGenerationEditor : Editor
         script.vegetationPreset.decrementRadiusMultiplier = script.decrementRadiusMultiplier;
         script.vegetationPreset.colors = script.colors;
         script.vegetationPreset.timeSpawnBranch = script.timeSpawnBranch;
+        EditorUtility.SetDirty(script.vegetationPreset);
     }
 
     // Save the mesh generated to keep it for build

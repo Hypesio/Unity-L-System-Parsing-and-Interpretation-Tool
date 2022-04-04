@@ -2,14 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a35e926e-c54f-4685-9192-23a1e6b4e9c5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.SYNT-Project/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.SYNT-Project/.idea/contentModel.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.SYNT-Project/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.SYNT-Project/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Editor/VegetationGenerationEditor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Editor/VegetationGenerationEditor.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Grammar/GrammarInterpretation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Grammar/GrammarInterpretation.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Mesh/MeshGestion.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Mesh/MeshGestion.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/VegetationGeneration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/VegetationGeneration.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/VegetationPreset.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/VegetationPreset.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,16 +24,16 @@
       <option value="$PROJECT_DIR$/Assets/Utils.cs" />
       <option value="$PROJECT_DIR$/Assets/MeshGestion.cs" />
       <option value="$PROJECT_DIR$/Assets/GenerateCylinder.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/Utils.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/Mesh/GenerateCylinder.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/Mesh/MeshGestion.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/VegetationGeneration.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/VegetationPreset.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/Editor/VegetationGenerationEditor.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/Grammar/ExpressionExecution.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/Grammar/ExpressionParsing.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/Grammar/GrammarInterpretation.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/Tests/GrammarTests.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/VegetationPreset.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/Editor/VegetationGenerationEditor.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/VegetationGeneration.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/Mesh/MeshGestion.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/Mesh/GenerateCylinder.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/Utils.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/Grammar/GrammarInterpretation.cs" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="26TS42K4hwzdmdeJpTFrQJK2DRx" />
@@ -97,6 +91,7 @@
       <workItem from="1648799678937" duration="3625000" />
       <workItem from="1648803953194" duration="2994000" />
       <workItem from="1648812267424" duration="12784000" />
+      <workItem from="1649007956834" duration="5311000" />
     </task>
     <servers />
   </component>

@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af44b9fd42cb03c4289540a4f3f93f6f, type: 3}
+  m_Name: TreeSimple4
+  m_EditorClassIdentifier: 
+  nbIteration: 10
+  axiom: A(1,10)
+  rules:
+  - predecessor: A(l,w)
+    application: '!(w)F(l)[&(a0)B(l*r2,w*wr)]/(d)A(l*r1,w*wr)'
+  - predecessor: 'B(l,w) '
+    application: '!(w)F(l)[-(a2)$C(l*r2,w*wr)]C(l*r1,w*wr)'
+  - predecessor: 'C(l,w) '
+    application: '!(w)F(l)[+(a2)$B(l*r2,w*wr)]B(l*r1,w*wr)'
+  defines:
+  - word: r1
+    value: 0.9
+  - word: r2
+    value: 0.7
+  - word: a0
+    value: 30
+  - word: a2
+    value: -30
+  - word: d
+    value: 137.5
+  - word: wr
+    value: 0.707
+  orientation3D: 1
+  angleTheta: 90
+  lengthPart: 2
+  lengthPolygon: 0
+  radiusBranch: 0.01
+  nbFacePerCylinder: 7
+  decrementRadiusMultiplier: 0.9
+  colors:
+  - serializedVersion: 2
+    rgba: 4278333307
+  timeSpawnBranch: 0.2

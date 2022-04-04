@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af44b9fd42cb03c4289540a4f3f93f6f, type: 3}
+  m_Name: ComplexBox
+  m_EditorClassIdentifier: 
+  nbIteration: 2
+  axiom: A
+  rules:
+  - predecessor: A
+    application: "B-F+CFC+F-D&F\u2227D-F+&&CFC+F+B//"
+  - predecessor: B
+    application: "A&F\u2227CFB\u2227F\u2227D\u2227\u2227-F-D\u2227|F\u2227B|FC\u2227F\u2227A//"
+  - predecessor: C
+    application: "|D\u2227|F\u2227B-F+C\u2227F\u2227A&&FA&F\u2227C+F+B\u2227F\u2227D//"
+  - predecessor: D
+    application: "|CFB-F+B|FA&F\u2227A&&FB-F+B|FC//"
+  defines: []
+  orientation3D: 1
+  angleTheta: 90
+  lengthPart: 1
+  lengthPolygon: 0.03
+  radiusBranch: 0.1
+  nbFacePerCylinder: 8
+  decrementRadiusMultiplier: 0.6
+  colors:
+  - serializedVersion: 2
+    rgba: 4279739410
+  timeSpawnBranch: 1

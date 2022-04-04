@@ -246,6 +246,7 @@ public class GrammarInterpretation : MonoBehaviour
             return letter + original;
 
         // Step 4: Choose the good rule using proba
+        RuleExtended choosenRule = null;
         float[] cumulativeArray = new float[letterRule.Count];
         cumulativeArray[0] = letterRule[0].probability;
         for(int i = 1; i < letterRule.Count; i ++)
@@ -253,12 +254,15 @@ public class GrammarInterpretation : MonoBehaviour
             cumulativeArray[i] = cumulativeArray[i - 1] + letterRule[i].probability;
         }
 
-        RuleExtended choosenRule = null;
         float ran = Random.value * cumulativeArray.Last();
+
         for (int i = 0; i < letterRule.Count; i++)
         {
             if (cumulativeArray[i] > ran)
+            {
                 choosenRule = letterRule[i];
+                break;
+            }
         }
 
         if (choosenRule == null)

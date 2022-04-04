@@ -40,7 +40,11 @@ public class Utils
     {
         //Debug.Log("Rotate " + angle);
         if (symbol == '$')
-            return new[] {Vector3.up, Vector3.left, Vector3.forward};
+        {
+            hlu[1] = Vector3.Cross(Vector3.up, hlu[0]) / Vector3.Cross(Vector3.up, hlu[0]).magnitude;
+            hlu[2] = Vector3.Cross(hlu[0], hlu[1]);
+            return hlu;
+        }
 
         // Convert to radian
         angle = angle * Mathf.Deg2Rad;

@@ -142,9 +142,11 @@ public class MeshGestion : MonoBehaviour
             }
             else if (c == '!') // Decrement segment radius
             {
-                float decrement = GetNumberInParenthesis(sentence, ref i, decrementRadiusMultiplier);
-                turtle.radius *= decrement;
-
+                float radius = GetNumberInParenthesis(sentence, ref i, decrementRadiusMultiplier);
+                if (Mathf.Approximately(radius, decrementRadiusMultiplier))
+                    turtle.radius *= radius;
+                else
+                    turtle.radius = radiusBranch * radius;
             }
             else if (c == '\'') // Change vertice color
             {
