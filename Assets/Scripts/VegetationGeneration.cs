@@ -15,6 +15,8 @@ public class VegetationGeneration : MonoBehaviour
     public Define[] defines;
 
     [Header("Mesh Options")] public bool orientation3D;
+    [Tooltip("The mesh will be made of plane. Face length = radius")]
+    public bool flatShape;
     public float angleTheta = 90;
     public float lengthPart = 2;
     public float lengthPolygon;
@@ -50,7 +52,7 @@ public class VegetationGeneration : MonoBehaviour
 
         string grammarApplied = GrammarInterpretation.ApplyGrammar(rules, defines, axiom, nbIteration);
         actualMesh.GenerateMeshFromSentence(grammarApplied, lengthPart, angleTheta, radiusBranch,
-            timeSpawnBranch, nbFacePerCylinder, orientation3D, decrementRadiusMultiplier, colors, lengthPolygon);
+            timeSpawnBranch, nbFacePerCylinder, orientation3D, decrementRadiusMultiplier, colors, lengthPolygon, flatShape);
     }
 
 

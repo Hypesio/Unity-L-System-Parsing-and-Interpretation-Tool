@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class Utils
 {
+    // Out the intersection point between 2 vectors
     public static bool LineLineIntersection(out Vector3 intersection, Vector3 linePoint1,
         Vector3 lineVec1, Vector3 linePoint2, Vector3 lineVec2){
 
@@ -132,6 +133,5 @@ public class Utils
 
         return res;
     }
-
 
 }

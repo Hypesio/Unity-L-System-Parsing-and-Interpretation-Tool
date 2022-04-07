@@ -93,7 +93,7 @@ public class ExpressionParsing
             }
             else
             {
-                Debug.LogWarning("[Grammar] Unknown character '" + c + "' +  in expression: " + rawExpression);
+                Debug.LogWarning("[Grammar] Unknown character '" + c + "' in expression: " + rawExpression);
             }
 
             index++;

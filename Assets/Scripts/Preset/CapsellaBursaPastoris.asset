@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af44b9fd42cb03c4289540a4f3f93f6f, type: 3}
+  m_Name: CapsellaBursaPastoris
+  m_EditorClassIdentifier: 
+  nbIteration: 24
+  axiom: I(9)a(13)
+  rules:
+  - predecessor: 'a(t) : t>0'
+    application: '[&(70)L]/(137.5)I(10)a(t-1)'
+  - predecessor: 'a(t) : t=0'
+    application: '[&(70)L]/(137.5)I(10)A'
+  - predecessor: 'A : * '
+    application: '[&(18)u(4)FFI(10)I(5)X(5)KKKK] /(137.5)I(8)A'
+  - predecessor: 'I(t) : t>0'
+    application: FI(t-1)
+  - predecessor: 'I(t) : t=0'
+    application: F
+  - predecessor: 'u(t) : t>0'
+    application: '&(9)u(t-1)'
+  - predecessor: 'u(t) : t=0'
+    application: '&(9)'
+  - predecessor: 'L : *'
+    application: '[{.-FI(7)+FI(7)+FI(7)}] [{.+FI(7)-FI(7)-FI(7)}]'
+  - predecessor: 'K : *'
+    application: '[''&{.+FI(2)--FI(2)}] [''&{.-FI(2)++FI(2)}]/(90)'
+  - predecessor: 'X(t) : t>0'
+    application: X(t-1)
+  - predecessor: 'X(t) : t=0'
+    application: "''\u2227(50)[[-GGGG++[GGG[++G{.].].]. ++GGGG.--GGG.--G.}]%"
+  defines: []
+  orientation3D: 1
+  angleTheta: 18
+  lengthPart: 0.005
+  lengthPolygon: 0
+  radiusBranch: 0.002
+  nbFacePerCylinder: 7
+  decrementRadiusMultiplier: 0.9
+  colors:
+  - serializedVersion: 2
+    rgba: 4280155904
+  - serializedVersion: 2
+    rgba: 4294573958
+  - serializedVersion: 2
+    rgba: 4280979699
+  timeSpawnBranch: 0.2
