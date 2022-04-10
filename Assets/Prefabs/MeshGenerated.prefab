@@ -48,6 +48,7 @@ MonoBehaviour:
   cleanMesh: 0
   cylinderNbFaces: 8
   meshToLoadOnStart: {fileID: 0}
+  treeArray: []
 --- !u!33 &4155065596217719166
 MeshFilter:
   m_ObjectHideFlags: 0

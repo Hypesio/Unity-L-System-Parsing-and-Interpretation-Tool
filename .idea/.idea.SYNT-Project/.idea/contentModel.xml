@@ -7,6 +7,18 @@
       <e p="Assembly-CSharp-Editor.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
+        <e p="Resources" t="Include">
+          <e p="Meshes" t="Include">
+            <e p="aaaaa.json" t="Include" />
+            <e p="aba.json" t="Include" />
+            <e p="Azy.json" t="Include" />
+            <e p="dedeed.json" t="Include" />
+            <e p="iju.json" t="Include" />
+            <e p="kjihi.json" t="Include" />
+            <e p="TreeSimple4(Clone).json" t="Include" />
+            <e p="Zouzi.json" t="Include" />
+          </e>
+        </e>
         <e p="Scripts" t="Include">
           <e p="Editor" t="Include">
             <e p="VegetationGenerationEditor.cs" t="Include" />
@@ -20,6 +32,7 @@
           <e p="Mesh" t="Include">
             <e p="GenerateCylinder.cs" t="Include" />
             <e p="MeshGestion.cs" t="Include" />
+            <e p="VegetationDestruction.cs" t="Include" />
           </e>
           <e p="SerializableDictionnary.cs" t="Include" />
           <e p="Tests" t="Include">
@@ -27,6 +40,7 @@
           </e>
           <e p="Utils.cs" t="Include" />
           <e p="VegetationGeneration.cs" t="Include" />
+          <e p="VegetationGrowth.cs" t="Include" />
           <e p="VegetationPreset.cs" t="Include" />
         </e>
       </e>

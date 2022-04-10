@@ -8,6 +8,7 @@ using UnityEngine;
 
 public class GenerateCylinder
 {
+    [System.Serializable]
     public class CylinderInfos
     {
         public List<int> triangles;
@@ -18,7 +19,8 @@ public class GenerateCylinder
     public static int nbFaces = 2;
 
     private static List<int> newTriangles;
-    private static List<Vector3> newVertices;
+    private static List<Vector3> allMeshVertices;
+    private static List<Vector3> cylinderVertices;
 
     private static List<(Vector3, int)> newTopVertices;
 
@@ -42,15 +44,17 @@ public class GenerateCylinder
         int startTrianglesNb = triangles.Count;
         int startVerticesNb = vertices.Count;
 
-        newVertices = vertices;
+        allMeshVertices = vertices;
         newTriangles = triangles;
         newTopVertices = new List<(Vector3, int)>();
+        cylinderVertices = new List<Vector3>();
 
         buildingACone = Mathf.Approximately(radiusTop, 0);
         if (buildingACone)
         {
-            newTopVertices.Add((centerTop, newVertices.Count));
-            newVertices.Add(centerTop);
+            newTopVertices.Add((centerTop, allMeshVertices.Count));
+            allMeshVertices.Add(centerTop);
+            cylinderVertices.Add(centerTop);
         }
 
         actualUp = (centerTop - centerBot).normalized;
@@ -69,10 +73,11 @@ public class GenerateCylinder
             SpawnCylinderFace(centerBot, centerTop, angleToAdd * i, faceWidthBot, faceWidthTop);
         }
 
-        var cylinderVertices = vertices.GetRange(startVerticesNb, vertices.Count - startVerticesNb);
-        var cylinderTriangles = newTriangles.GetRange(startTrianglesNb, triangles.Count - startTrianglesNb);
+        var cylinderTriangles = newTriangles.GetRange(startTrianglesNb, newTriangles.Count - startTrianglesNb);
+
         return new CylinderInfos() {triangles = cylinderTriangles, vertices = cylinderVertices, topVertices = newTopVertices};
     }
+
 
     // Return the length of a face of the cylinder
     static float GetLengthOfFaces(float nbFaces, float radius, Vector3 center)
@@ -105,17 +110,19 @@ public class GenerateCylinder
 
         Vector3 faceRightBot = Vector3.Cross((faceBotCenter - centerBot), actualUp).normalized;
         Vector3 faceRightTop = Vector3.Cross((faceTopCenter - centerTop), actualUp).normalized;
-        int verticeStartIndex = newVertices.Count;
+        int verticeStartIndex = allMeshVertices.Count;
 
+        Vector3 top1 = (faceTopCenter - faceRightTop * faceWidthTop / 2);
+        Vector3 top2 = (faceTopCenter + faceRightTop * faceWidthTop / 2);
+        int closestTop1 = verticeStartIndex;
+        int closestTop2 = verticeStartIndex + 1;
         // 1. Create vertices
         if (!buildingACone)
         {
-            Vector3 top1 = (faceTopCenter - faceRightTop * faceWidthTop / 2);
-            Vector3 top2 = (faceTopCenter + faceRightTop * faceWidthTop / 2);
-            newTopVertices.Add((top1, verticeStartIndex));
-            newTopVertices.Add((top2, verticeStartIndex + 1));
-            newVertices.Add(top1);
-            newVertices.Add(top2);
+            GetClosestVertex(top1, previousCylinder,out closestTop1, 0.001f, true);
+            GetClosestVertex(top2, previousCylinder,out closestTop2, 0.001f, true);
+            newTopVertices.Add((top1, closestTop1));
+            newTopVertices.Add((top2, closestTop2));
         }
 
         Vector3 bottom1 = (faceBotCenter + faceRightBot * faceWidthBot / 2);
@@ -123,14 +130,15 @@ public class GenerateCylinder
         int[] trianglesPoints;
         if (previousCylinder == null)
         {
-            newVertices.Add(bottom1);
-            newVertices.Add(bottom2);
-            trianglesPoints = new int[] {verticeStartIndex, verticeStartIndex + 1,verticeStartIndex + 2, verticeStartIndex, verticeStartIndex + 2, verticeStartIndex + 3};
+            GetClosestVertex(bottom1, previousCylinder, out int closestBottom1, 0.001f, true);
+            GetClosestVertex(bottom2, previousCylinder, out int closestBottom2, 0.001f, true);
+            trianglesPoints = new int[] {closestTop1,closestTop2, closestBottom1, closestTop1, closestBottom1, closestBottom2};
         }
         else
         {
-            int closestBottom1 = GetClosestTopVertex(bottom1, previousCylinder);
-            trianglesPoints = new int[] {verticeStartIndex, verticeStartIndex + 1, closestBottom1, verticeStartIndex, closestBottom1, GetClosestTopVertex(bottom2, previousCylinder)};
+            GetClosestVertex(bottom1, previousCylinder, out int closestBottom1);
+            GetClosestVertex(bottom2, previousCylinder, out int closestBottom2);
+            trianglesPoints = new int[] {closestTop1, closestTop2, closestBottom1, closestTop1, closestBottom1, closestBottom2};
             indexTopPreviousCylinder += 2;
         }
 
@@ -154,22 +162,52 @@ public class GenerateCylinder
         newTriangles.AddRange(trianglesPoints);
     }
 
-    // Get the closest vertex from previous cylinder
-    private static int GetClosestTopVertex(Vector3 vertex, CylinderInfos refCylinder)
+    // Get the closest vertex from previous cylinder. Return true if already in the shape
+    private static bool GetClosestVertex(Vector3 vertex, CylinderInfos refCylinder, out int closestVertex, float maxDistance = 50f, bool addToAllVertice = false)
     {
-        int closestOne = 0;
+        closestVertex = -1;
         float minDistance = int.MaxValue;
-        for (int i = 0; i < refCylinder.topVertices.Count; i++)
+        bool inShape = false;
+        if (maxDistance < 1)
         {
-            float dist = Vector3.Distance(vertex, refCylinder.topVertices[i].Item1);
-            if (dist < minDistance)
+            for (int i = 0; i < cylinderVertices.Count; i++)
             {
-                minDistance = dist;
-                closestOne = refCylinder.topVertices[i].Item2;
+                float dist = Vector3.Distance(vertex, cylinderVertices[i]);
+                if (dist < maxDistance && dist < minDistance)
+                {
+                    inShape = true;
+                    minDistance = dist;
+                    closestVertex = allMeshVertices.FindIndex(v => v == cylinderVertices[i]);
+                }
             }
         }
 
-        return closestOne;
+        if (refCylinder != null)
+        {
+            for (int i = 0; i < refCylinder.topVertices.Count; i++)
+            {
+                float dist = Vector3.Distance(vertex, refCylinder.topVertices[i].Item1);
+                if (dist < maxDistance && dist < minDistance)
+                {
+                    inShape = false;
+                    minDistance = dist;
+                    closestVertex = refCylinder.topVertices[i].Item2;
+                }
+            }
+        }
+
+        if (closestVertex == -1)
+        {
+            allMeshVertices.Add(vertex);
+            closestVertex = allMeshVertices.Count - 1;
+            cylinderVertices.Add(allMeshVertices[closestVertex]);
+        }
+        else if (!cylinderVertices.Contains(allMeshVertices[closestVertex]))
+        {
+            cylinderVertices.Add(allMeshVertices[closestVertex]);
+        }
+
+        return inShape;
     }
 
     // Add a face at the top of the cylinder
@@ -179,15 +217,19 @@ public class GenerateCylinder
             return;
         for (int i = 2; i < cylinder.topVertices.Count ; i+=2)
         {
-            triangles.AddRange(new int[]{cylinder.topVertices[i + 1].Item2, cylinder.topVertices[i].Item2, cylinder.topVertices[0].Item2});
+            int[] triangle = new int[]
+                {cylinder.topVertices[i + 1].Item2, cylinder.topVertices[i].Item2, cylinder.topVertices[0].Item2};
+            cylinder.triangles.AddRange(triangle);
+            triangles.AddRange(triangle);
         }
     }
 
     public static CylinderInfos CreateFace(List<Vector3> vertices, List<int> triangles, Vector3 startPos, Vector3 endPos, float widthFace, CylinderInfos previousFace)
     {
-        newVertices = vertices;
+        allMeshVertices = vertices;
         newTriangles = triangles;
         newTopVertices = new List<(Vector3, int)>();
+        cylinderVertices = new List<Vector3>();
 
         Vector3 planeOrientation = Vector3.Cross(endPos - startPos, Vector3.forward).normalized;
 
@@ -196,8 +238,11 @@ public class GenerateCylinder
 
         Vector3 top1 = endPos + planeOrientation.normalized * (widthFace / 2);
         Vector3 top2 = endPos - planeOrientation.normalized * (widthFace / 2);
-        newVertices.Add(top1);
-        newVertices.Add(top2);
+        allMeshVertices.Add(top1);
+        allMeshVertices.Add(top2);
+        cylinderVertices.Add(top1);
+        cylinderVertices.Add(top2);
+
         newTopVertices.Add((top1, verticeStartIndex));
         newTopVertices.Add((top2, verticeStartIndex + 1));
 
@@ -205,8 +250,10 @@ public class GenerateCylinder
         Vector3 bottom2 = startPos - planeOrientation.normalized * (widthFace / 2);
         int[] trianglesPoints;
 
-        newVertices.Add(bottom1);
-        newVertices.Add(bottom2);
+        allMeshVertices.Add(bottom1);
+        allMeshVertices.Add(bottom2);
+        cylinderVertices.Add(bottom1);
+        cylinderVertices.Add(bottom2);
         trianglesPoints = new int[] {verticeStartIndex, verticeStartIndex + 1,verticeStartIndex + 2, verticeStartIndex + 3, verticeStartIndex + 2, verticeStartIndex + 1};
 
         triangles.AddRange(trianglesPoints);
@@ -216,7 +263,6 @@ public class GenerateCylinder
             CreateFace(vertices, triangles, startPos - planeOrientation * (widthFace / 2), startPos + planeOrientation * (widthFace / 2), widthFace, null);
         }
 
-        var cylinderVertices = vertices.GetRange(verticeStartIndex, vertices.Count - verticeStartIndex);
         var cylinderTriangles = newTriangles.GetRange(trianglesStartIndex, 6);
         return new CylinderInfos() {triangles = cylinderTriangles, vertices = cylinderVertices, topVertices = newTopVertices};
     }

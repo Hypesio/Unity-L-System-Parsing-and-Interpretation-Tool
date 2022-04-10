@@ -1,10 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
 using UnityEngine.Windows;
 
 [CustomEditor(typeof(VegetationGeneration))]
@@ -19,13 +14,11 @@ public class VegetationGenerationEditor : Editor
 
     public override void OnInspectorGUI()
     {
-
-        if (GUILayout.Button("Generate new mesh"))
+        if (script.actualMesh == null && GUILayout.Button("Generate mesh"))
         {
             script.GenerateVegetation(true);
         }
-
-        if (script.actualMesh != null && GUILayout.Button("Re-generate mesh"))
+        else if (script.actualMesh != null && GUILayout.Button("Re-generate mesh"))
         {
             script.GenerateVegetation(false);
         }
@@ -36,7 +29,7 @@ public class VegetationGenerationEditor : Editor
             GUILayout.Label("Mesh name:");
 
             meshName = GUILayout.TextField(meshName, 25);
-            if (GUILayout.Button("Save mesh"))
+            if (GUILayout.Button("Set object as static"))
             {
                 SaveMesh(meshName);
             }
@@ -120,7 +113,8 @@ public class VegetationGenerationEditor : Editor
         if (!mesh)
             Debug.LogWarning("Can't load mesh back in prefab. Prefab won't be linked with mesh");
         script.actualMesh.GetComponent<MeshFilter>().sharedMesh = mesh;
-        script.actualMesh.meshToLoadOnStart = mesh;
+        script.actualMesh.MakeTreeStatic();
+        script.GenerateVegetation(true);
     }
 
     // Save a prefab in the asset database to re-use later

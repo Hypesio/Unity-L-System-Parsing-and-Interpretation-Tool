@@ -2,7 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 using CylinderInfos = GenerateCylinder.CylinderInfos;
 
@@ -12,9 +15,9 @@ public class MeshGestion : MonoBehaviour
     public bool cleanMesh;
     public int cylinderNbFaces = 15;
 
-    [HideInInspector] public Mesh meshToLoadOnStart;
 
-    private Mesh meshGenerated;
+    public Mesh meshGenerated { get; private set; }
+
     private MeshFilter meshFilter;
     private bool orientation3D = false;
     private bool flatShape = false;
@@ -45,21 +48,22 @@ public class MeshGestion : MonoBehaviour
         }
     }
 
+    [System.Serializable]
     public class TreeNode
     {
-        public Vector3 startPosition;
-        public Vector3 heading;
         public CylinderInfos cylinder;
-        public List<TreeNode> children;
+        public List<int> childrenIndex;
+        public int parentIndex;
 
-        public TreeNode(Vector3 _startPosition, Vector3 _heading, CylinderInfos _cylinder)
+        public TreeNode(CylinderInfos _cylinder, int _parent)
         {
-            startPosition = _startPosition;
-            heading = _heading;
             cylinder = _cylinder;
-            children = new List<TreeNode>();
+            childrenIndex = new List<int>();
+            parentIndex = _parent;
         }
     }
+
+    public List<TreeNode> treeArray;
 
     class Polygon
     {
@@ -73,18 +77,21 @@ public class MeshGestion : MonoBehaviour
 
     void Start()
     {
-        if (meshToLoadOnStart)
+        if (!meshGenerated)
         {
-            gameObject.GetComponent<MeshFilter>().sharedMesh = meshToLoadOnStart;
-            meshGenerated = meshToLoadOnStart;
+            meshFilter = gameObject.GetComponent<MeshFilter>();
+            meshGenerated = meshFilter.sharedMesh;
         }
+
+        if(treeArray == null)
+            LoadTreeData();
     }
 
     // Update is called once per frame
     void Update()
     {
 #if UNITY_EDITOR
-        if (!meshToLoadOnStart && cleanMesh)
+        if (cleanMesh)
         {
             InitMesh();
             cleanMesh = false;
@@ -112,6 +119,7 @@ public class MeshGestion : MonoBehaviour
         orientation3D = _orientation3D;
         lengthPolygon = _lengthPolygon;
         flatShape = _flatShape;
+        treeArray = new List<TreeNode>();
         StopAllCoroutines();
         InitMesh();
         StartCoroutine(IGenerateMeshFromSentence(sentence, lengthPart, angleTheta, radiusBranch, timeBetweenBranch,
@@ -127,8 +135,8 @@ public class MeshGestion : MonoBehaviour
         meshColors = new List<Color32>();
         this.colors = colors;
         Vector3[] hlu = new[] {Vector3.up, Vector3.left, Vector3.forward};
-        TreeNode root = new TreeNode(Vector3.zero, hlu[0], null);
-        TurtleInfos turtle = new TurtleInfos(Vector3.zero, hlu, radiusBranch, 0, root);
+        treeArray.Add(new TreeNode(null, -1));
+        TurtleInfos turtle = new TurtleInfos(Vector3.zero, hlu, radiusBranch, 0, treeArray[0]);
         int leafNumber = 0;
 
         Stack<TurtleInfos> turtleStack = new Stack<TurtleInfos>();
@@ -152,7 +160,7 @@ public class MeshGestion : MonoBehaviour
             }
             else if (c == ']') // Unstack position to change
             {
-                if (turtle.previousNode.children.Count == 0) // We leave a terminal branch
+                if (turtle.previousNode.childrenIndex.Count == 0) // We leave a terminal branch
                 {
                     GenerateCylinder.CloseTopCylinder(meshTriangles, turtle.previousNode.cylinder);
                 }
@@ -241,8 +249,9 @@ public class MeshGestion : MonoBehaviour
 
                     }
 
-                    TreeNode newNode = new TreeNode(startPoint, hlu[0], cylinder);
-                    turtle.previousNode?.children.Add(newNode);
+                    TreeNode newNode = new TreeNode(cylinder, treeArray.FindIndex(p => p == turtle.previousNode));
+                    treeArray.Add(newNode);
+                    turtle.previousNode?.childrenIndex.Add(treeArray.Count - 1);
                     turtle.previousNode = newNode;
 
                     meshColors.AddRange(Enumerable.Repeat(colors[turtle.indexColor],
@@ -295,7 +304,7 @@ public class MeshGestion : MonoBehaviour
                 throw new Exception("[MeshGestion] Mesh exceed max capacity! Polygons > 65000");
         }
 
-        if (turtle.previousNode.children.Count == 0) // We leave a terminal branch
+        if (turtle.previousNode.childrenIndex.Count == 0) // We leave a terminal branch
         {
             GenerateCylinder.CloseTopCylinder(meshTriangles, turtle.previousNode.cylinder);
         }
@@ -338,10 +347,66 @@ public class MeshGestion : MonoBehaviour
         return regularValue;
     }
 
+    // Record the vertex position for the polygon
     private void RecordVertex(Polygon poly, TurtleInfos turtle)
     {
         meshVertices.Add(turtle.position);
         meshColors.Add(colors[turtle.indexColor]);
         poly.vertices.Add(meshVertices.Count - 1);
+    }
+
+    private class TreeSave
+    {
+        public List<TreeNode> treeArray;
+    }
+    public void MakeTreeStatic()
+    {
+        meshFilter = GetComponent<MeshFilter>();
+
+        gameObject.AddComponent<MeshCollider>();
+
+        TreeSave save = new TreeSave();
+        save.treeArray = treeArray;
+
+        string dataSaved = JsonUtility.ToJson(save);
+        Debug.Log(dataSaved);
+
+        string path = "Assets/Resources/Meshes/" + meshFilter.sharedMesh.name + ".json";
+        FileStream fs = File.Create(path);
+        fs.Close();
+        File.WriteAllText(path, dataSaved);
+
+        AssetDatabase.SaveAssets();
+        LoadTreeData();
+    }
+
+    public void LoadTreeData()
+    {
+        meshFilter = GetComponent<MeshFilter>();
+        try
+        {
+            string data = File.ReadAllText("Assets/Resources/Meshes/" + meshFilter.sharedMesh.name + ".json");
+            treeArray = (JsonUtility.FromJson(data, typeof(TreeSave)) as TreeSave)?.treeArray;
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("[MeshGestion] Can't read tree data of " + meshFilter.sharedMesh.name +
+                             "! (won't be destroyable) | " + e.Message);
+        }
+    }
+
+    public static int GenerateNewTreeNodeArray(List<TreeNode> originalTreeNodeArray, List<TreeNode> treeNodeArray, TreeNode actualTree)
+    {
+        int indexNode = treeNodeArray.Count;
+        treeNodeArray.Add(actualTree);
+
+        for (int i = 0; i < actualTree.childrenIndex.Count; i++)
+        {
+            int newIndex =
+                GenerateNewTreeNodeArray(originalTreeNodeArray, treeNodeArray, originalTreeNodeArray[actualTree.childrenIndex[i]]);
+            actualTree.childrenIndex[i] = newIndex;
+        }
+
+        return indexNode;
     }
 }

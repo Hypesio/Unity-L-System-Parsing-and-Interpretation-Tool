@@ -30,7 +30,7 @@ MonoBehaviour:
   - predecessor: 'u(t) : t=0'
     application: '&(9)'
   - predecessor: 'L : *'
-    application: '[{.-FI(7)+FI(7)+FI(7)}] [{.+FI(7)-FI(7)-FI(7)}]'
+    application: '[''''''{.-FI(7)+FI(7)+FI(7)}] [''''''{.+FI(7)-FI(7)-FI(7)}]'
   - predecessor: 'K : *'
     application: '[''&{.+FI(2)--FI(2)}] [''&{.-FI(2)++FI(2)}]/(90)'
   - predecessor: 'X(t) : t>0'
@@ -42,7 +42,7 @@ MonoBehaviour:
   angleTheta: 18
   lengthPart: 0.005
   lengthPolygon: 0
-  radiusBranch: 0.002
+  radiusBranch: 0.005
   nbFacePerCylinder: 7
   decrementRadiusMultiplier: 0.9
   colors:
@@ -52,4 +52,6 @@ MonoBehaviour:
     rgba: 4294573958
   - serializedVersion: 2
     rgba: 4280979699
-  timeSpawnBranch: 0.2
+  - serializedVersion: 2
+    rgba: 4280859675
+  timeSpawnBranch: 0

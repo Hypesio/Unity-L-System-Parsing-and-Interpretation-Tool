@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Rule = GrammarInterpretation.Rule;
 using Define = GrammarInterpretation.Define;
@@ -28,20 +29,45 @@ public class VegetationGeneration : MonoBehaviour
 
     [Header("Other options")] public float timeSpawnBranch = 0.2f;
     public GameObject meshHandlerPrefab;
-
-    [HideInInspector]
     public MeshGestion actualMesh;
 
     private Transform treeParents;
 
     public void GenerateVegetation(bool newMesh = false)
     {
+        PrepareMesh(newMesh);
+        string grammarApplied = ApplyGrammar(axiom, nbIteration);
+        GenerateMesh(grammarApplied);
+    }
+
+    public string ApplyGrammar(string _axiom, int _nbIteration)
+    {
+       return GrammarInterpretation.ApplyGrammar(rules, defines, _axiom, _nbIteration);
+    }
+
+    public Mesh GenerateMesh(string sentence)
+    {
+        PrepareMesh();
+        actualMesh.GenerateMeshFromSentence(sentence, lengthPart, angleTheta, radiusBranch,
+            timeSpawnBranch, nbFacePerCylinder, orientation3D, decrementRadiusMultiplier, colors, lengthPolygon, flatShape);
+        return actualMesh.meshGenerated;
+    }
+
+    private void PrepareMesh(bool newMesh = false)
+    {
         if (newMesh || !actualMesh)
         {
             if (actualMesh)
             {
                 if (!treeParents)
-                    treeParents = Instantiate(new GameObject("TreeParent")).transform;
+                {
+                    treeParents = GameObject.Find("TreeParent")?.transform;
+                    if (!treeParents)
+                        treeParents = GameObject.Find("TreeParent(Clone)")?.transform;
+                    if (!treeParents)
+                        treeParents = Instantiate(new GameObject("TreeParent")).transform;
+                }
+
                 actualMesh.transform.parent = treeParents;
             }
 
@@ -49,12 +75,5 @@ public class VegetationGeneration : MonoBehaviour
                 meshHandlerPrefab.name = vegetationPreset.name;
             actualMesh = Instantiate(meshHandlerPrefab, transform.position, Quaternion.identity, this.transform).GetComponent<MeshGestion>();
         }
-
-        string grammarApplied = GrammarInterpretation.ApplyGrammar(rules, defines, axiom, nbIteration);
-        actualMesh.GenerateMeshFromSentence(grammarApplied, lengthPart, angleTheta, radiusBranch,
-            timeSpawnBranch, nbFacePerCylinder, orientation3D, decrementRadiusMultiplier, colors, lengthPolygon, flatShape);
     }
-
-
-
 }
