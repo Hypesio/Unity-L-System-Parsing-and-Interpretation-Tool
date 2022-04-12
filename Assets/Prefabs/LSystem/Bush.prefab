@@ -47,7 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cleanMesh: 0
   cylinderNbFaces: 4
-  meshToLoadOnStart: {fileID: 4300000, guid: c8071b4bffbd29145a21199736af5319, type: 2}
+  treeArray: []
 --- !u!33 &2153645518731138597
 MeshFilter:
   m_ObjectHideFlags: 0

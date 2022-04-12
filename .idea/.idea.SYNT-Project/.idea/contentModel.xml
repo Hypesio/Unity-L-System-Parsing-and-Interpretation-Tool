@@ -9,14 +9,8 @@
       <e p="Assets" t="Include">
         <e p="Resources" t="Include">
           <e p="Meshes" t="Include">
-            <e p="aaaaa.json" t="Include" />
-            <e p="aba.json" t="Include" />
-            <e p="Azy.json" t="Include" />
-            <e p="dedeed.json" t="Include" />
-            <e p="iju.json" t="Include" />
-            <e p="kjihi.json" t="Include" />
-            <e p="TreeSimple4(Clone).json" t="Include" />
-            <e p="Zouzi.json" t="Include" />
+            <e p="zaou.json" t="Include" />
+            <e p="zaoubbb.json" t="Include" />
           </e>
         </e>
         <e p="Scripts" t="Include">
@@ -29,6 +23,7 @@
             <e p="GrammarInterpretation.cs" t="Include" />
             <e p="GrammarUtils.cs" t="Include" />
           </e>
+          <e p="InterpretationProgression.cs" t="Include" />
           <e p="Mesh" t="Include">
             <e p="GenerateCylinder.cs" t="Include" />
             <e p="MeshGestion.cs" t="Include" />
@@ -42,6 +37,38 @@
           <e p="VegetationGeneration.cs" t="Include" />
           <e p="VegetationGrowth.cs" t="Include" />
           <e p="VegetationPreset.cs" t="Include" />
+        </e>
+        <e p="TextMesh Pro" t="Include">
+          <e p="Fonts" t="Include">
+            <e p="LiberationSans - OFL.txt" t="Include" />
+          </e>
+          <e p="Resources" t="Include">
+            <e p="LineBreaking Following Characters.txt" t="Include" />
+            <e p="LineBreaking Leading Characters.txt" t="Include" />
+          </e>
+          <e p="Shaders" t="Include">
+            <e p="TMP_Bitmap-Custom-Atlas.shader" t="Include" />
+            <e p="TMP_Bitmap-Mobile.shader" t="Include" />
+            <e p="TMP_Bitmap.shader" t="Include" />
+            <e p="TMP_SDF Overlay.shader" t="Include" />
+            <e p="TMP_SDF SSD.shader" t="Include" />
+            <e p="TMP_SDF-Mobile Masking.shader" t="Include" />
+            <e p="TMP_SDF-Mobile Overlay.shader" t="Include" />
+            <e p="TMP_SDF-Mobile SSD.shader" t="Include" />
+            <e p="TMP_SDF-Mobile.shader" t="Include" />
+            <e p="TMP_SDF-Surface-Mobile.shader" t="Include" />
+            <e p="TMP_SDF-Surface.shader" t="Include" />
+            <e p="TMP_SDF.shader" t="Include" />
+            <e p="TMP_Sprite.shader" t="Include" />
+            <e p="TMPro.cginc" t="Include" />
+            <e p="TMPro_Mobile.cginc" t="Include" />
+            <e p="TMPro_Properties.cginc" t="Include" />
+            <e p="TMPro_Surface.cginc" t="Include" />
+          </e>
+          <e p="Sprites" t="Include">
+            <e p="EmojiOne Attribution.txt" t="Include" />
+            <e p="EmojiOne.json" t="Include" />
+          </e>
         </e>
       </e>
       <e p="obj" t="ExcludeRecursive" />

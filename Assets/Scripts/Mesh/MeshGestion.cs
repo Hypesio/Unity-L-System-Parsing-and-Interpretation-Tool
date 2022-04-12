@@ -7,6 +7,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Events;
 using CylinderInfos = GenerateCylinder.CylinderInfos;
 
 [ExecuteInEditMode]
@@ -14,6 +15,9 @@ public class MeshGestion : MonoBehaviour
 {
     public bool cleanMesh;
     public int cylinderNbFaces = 15;
+    public bool waitBetweenEachLetter = false;
+    public UnityEvent<string> onStartBuildingMesh;
+    public UnityEvent<int> onUpdateBuildingMesh;
 
 
     public Mesh meshGenerated { get; private set; }
@@ -115,6 +119,7 @@ public class MeshGestion : MonoBehaviour
         float timeBetweenBranch, int _cylinderNbFaces, bool _orientation3D, float decrementRadiusMultiplier,
         Color32[] colors, float _lengthPolygon, bool _flatShape = false)
     {
+        onStartBuildingMesh?.Invoke(sentence);
         cylinderNbFaces = _cylinderNbFaces;
         orientation3D = _orientation3D;
         lengthPolygon = _lengthPolygon;
@@ -145,6 +150,17 @@ public class MeshGestion : MonoBehaviour
 
         for (int i = 0; i < sentence.Length; i++)
         {
+            if (timeBetweenBranch > 0 && waitBetweenEachLetter && Application.isPlaying)
+            {
+                meshGenerated.vertices = meshVertices.ToArray();
+                meshGenerated.triangles = meshTriangles.ToArray();
+                meshGenerated.colors32 = meshColors.ToArray();
+                meshGenerated.RecalculateNormals();
+                meshFilter.mesh = meshGenerated;
+                onUpdateBuildingMesh?.Invoke(i);
+                yield return new WaitForSeconds(timeBetweenBranch);
+            }
+
             char c = sentence[i];
             if (c == '(') // Skip useless parenthesis number
             {
@@ -221,6 +237,12 @@ public class MeshGestion : MonoBehaviour
                     i++;
                     if (i >= sentence.Length)
                         break;
+
+                    if (timeBetweenBranch > 0 && waitBetweenEachLetter && Application.isPlaying)
+                    {
+                        onUpdateBuildingMesh?.Invoke(i);
+                        yield return new WaitForSeconds(timeBetweenBranch);
+                    }
                     c = sentence[i];
                 }
                 i--;
@@ -261,7 +283,10 @@ public class MeshGestion : MonoBehaviour
                     {
                         meshGenerated.vertices = meshVertices.ToArray();
                         meshGenerated.triangles = meshTriangles.ToArray();
+                        meshGenerated.colors32 = meshColors.ToArray();
+                        meshGenerated.RecalculateNormals();
                         meshFilter.mesh = meshGenerated;
+                        onUpdateBuildingMesh?.Invoke(i);
                         yield return new WaitForSeconds(timeBetweenBranch);
                     }
                 }
@@ -302,7 +327,10 @@ public class MeshGestion : MonoBehaviour
 
             if (meshTriangles.Count / 3 > 65000)
                 throw new Exception("[MeshGestion] Mesh exceed max capacity! Polygons > 65000");
+
         }
+
+        onUpdateBuildingMesh?.Invoke(sentence.Length);
 
         if (turtle.previousNode.childrenIndex.Count == 0) // We leave a terminal branch
         {
@@ -395,15 +423,15 @@ public class MeshGestion : MonoBehaviour
         }
     }
 
-    public static int GenerateNewTreeNodeArray(List<TreeNode> originalTreeNodeArray, List<TreeNode> treeNodeArray, TreeNode actualTree)
+    public static int GenerateNewTreeNodeArray(List<TreeNode> originalTreeNodeArray, List<TreeNode> treeNodeArray, TreeNode actualTree, int parentIndex)
     {
         int indexNode = treeNodeArray.Count;
         treeNodeArray.Add(actualTree);
-
+        actualTree.parentIndex = parentIndex;
         for (int i = 0; i < actualTree.childrenIndex.Count; i++)
         {
             int newIndex =
-                GenerateNewTreeNodeArray(originalTreeNodeArray, treeNodeArray, originalTreeNodeArray[actualTree.childrenIndex[i]]);
+                GenerateNewTreeNodeArray(originalTreeNodeArray, treeNodeArray, originalTreeNodeArray[actualTree.childrenIndex[i]], indexNode);
             actualTree.childrenIndex[i] = newIndex;
         }
 

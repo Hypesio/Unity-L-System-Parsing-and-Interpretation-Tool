@@ -10,6 +10,8 @@ public class VegetationDestruction : MonoBehaviour
 {
     public float forceEjection = 2.3f;
     public float timeIgnoreCollision = 0.2f;
+    public GameObject explosionEffect;
+
     private Camera mainCam;
 
     // Start is called before the first frame update
@@ -32,25 +34,22 @@ public class VegetationDestruction : MonoBehaviour
                 {
                     if (Application.isPlaying && hit.collider.attachedRigidbody)
                     {
-                        MeshCollider collider = hit.collider.GetComponent<MeshCollider>();
-                        hit.collider.attachedRigidbody.isKinematic = true;
+                        MeshCollider collider = meshGestion.GetComponent<MeshCollider>();
+                        collider.attachedRigidbody.isKinematic = true;
                         collider.convex = false;
                         Physics.Raycast(mouseRay, out hit, 20);
-                        try
-                        {
-                            Touched(meshGestion, direction, hit.triangleIndex, hit.point);
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.LogError(e);
-                        }
 
-                        hit.collider.attachedRigidbody.isKinematic = false;
-                        collider.convex = true;
+                        Touched(meshGestion, direction, hit.triangleIndex, hit.point);
                     }
                     else
                     {
                         Touched(meshGestion, direction, hit.triangleIndex, hit.point);
+                    }
+
+                    if (explosionEffect)
+                    {
+                        GameObject effect = Instantiate(explosionEffect, hit.point, Quaternion.identity);
+                        Destroy(effect, 2);
                     }
                 }
             }
@@ -59,8 +58,15 @@ public class VegetationDestruction : MonoBehaviour
 
     public void Touched(MeshGestion meshGestion, Vector3 direction, int triangleIndex, Vector3 positionTouched)
     {
+
         // For test purpose change color of triangle
         int[] triangles = meshGestion.meshGenerated.triangles;
+        if (triangleIndex * 3 + 3 >= triangles.Length || triangleIndex < 0)
+        {
+            Debug.LogWarning("[VegetationDestruction] Invalid triangle specified. Triangle: " + triangleIndex + '/' + triangles.Length/3);
+            return;
+        }
+
         int[] triangleTouched = new []
             {triangles[triangleIndex * 3], triangles[triangleIndex * 3 + 1], triangles[triangleIndex * 3 + 2]};
 
@@ -76,6 +82,12 @@ public class VegetationDestruction : MonoBehaviour
         TreeNode nodeTouched = GetTriangleNode(triangleTouched, nodes, nodes[0]);
         if (nodeTouched == null)
             throw new Exception("[VegetationDestruction] Can't find node touched");
+
+        if (nodeTouched.parentIndex == -1)
+        {
+            meshGestion.GetComponent<Rigidbody>()?.AddForce(direction * forceEjection, ForceMode.Impulse);
+        }
+
         Vector3 localPositionTouched = positionTouched - meshGestion.transform.position;
         Mesh newMesh = CreateCutedPart(nodeTouched, meshGestion.meshGenerated, nodes, localPositionTouched);
 
@@ -86,24 +98,39 @@ public class VegetationDestruction : MonoBehaviour
             GameObject cutedPart = Instantiate(new GameObject(meshGestion.gameObject.name + "CutedPart"),
                 positionTouched, Quaternion.identity);
             cutedPart.AddComponent<MeshRenderer>().material = meshGestion.GetComponent<Renderer>().material;
+            newMesh.RecalculateNormals();
             cutedPart.AddComponent<MeshFilter>().mesh = newMesh;
             cutedPart.AddComponent<Rigidbody>().AddForce(direction * forceEjection, ForceMode.Impulse);
             MeshCollider meshCollider = cutedPart.AddComponent<MeshCollider>();
             meshCollider.convex = true;
             MeshGestion newMeshGestion = cutedPart.AddComponent<MeshGestion>();
             newMeshGestion.treeArray = new List<TreeNode>();
-            MeshGestion.GenerateNewTreeNodeArray(nodes, newMeshGestion.treeArray, nodeTouched);
+            MeshGestion.GenerateNewTreeNodeArray(nodes, newMeshGestion.treeArray, nodeTouched, -1);
 
-            // Ignore collision for a short amount of time to avoid the cut part to "bounce" out of original shape
-            StartCoroutine(IIgnoreCollision(meshCollider, meshGestion.GetComponent<Collider>()));
-
+            meshGestion.meshGenerated.RecalculateBounds();
             meshGestion.GetComponent<MeshFilter>().sharedMesh = meshGestion.meshGenerated;
+            meshGestion.GetComponent<MeshCollider>().sharedMesh = meshGestion.meshGenerated;
+            MeshCollider newMeshCollider = meshGestion.GetComponent<MeshCollider>();
+            newMeshCollider.sharedMesh = meshGestion.meshGenerated;
+
+            Rigidbody rb = meshGestion.GetComponent<Rigidbody>();
+            if (rb)
+            {
+                newMeshCollider.convex = true;
+                rb.isKinematic = false;
+            }
+            // Ignore collision for a short amount of time to avoid the cut part to "bounce" out of original shape
+            StartCoroutine(IIgnoreCollision(meshCollider, newMeshCollider));
         }
         else
         {
             // Update original mesh
+            meshGestion.meshGenerated.RecalculateBounds();
             meshGestion.GetComponent<MeshFilter>().mesh = meshGestion.meshGenerated;
+            meshGestion.GetComponent<MeshCollider>().sharedMesh= meshGestion.meshGenerated;
         }
+
+
     }
 
     // Return the new mesh created by cutting at the root of the cylinder touched
@@ -116,7 +143,6 @@ public class VegetationDestruction : MonoBehaviour
         List<Vector3> originalVertices = originalMesh.vertices.ToList();
 
         RecursiveCut(verticesToCut, trianglesToCut, colorsToCut, originalMesh, nodes, nodeToCut);
-
         DeleteCutedPart(originalMesh, trianglesToCut);
 
         // -- Prepare triangle for new part
@@ -142,7 +168,7 @@ public class VegetationDestruction : MonoBehaviour
             else
                 throw new Exception("[VegetationDestruction] Missing vertices in cut part");
         }
-        UpdateTreeTriangles(verticesOldAndNewIndex, nodes, nodeToCut);
+
 
         if (nodeToCut.parentIndex != -1)
         {
@@ -155,6 +181,8 @@ public class VegetationDestruction : MonoBehaviour
         {
             verticesToCut[i] -= localPositionTouched;
         }
+
+        UpdateTreeTrianglesAndVertex(verticesOldAndNewIndex, nodes, nodeToCut, localPositionTouched);
 
         meshCreated.vertices = verticesToCut.ToArray();
         meshCreated.triangles = trianglesToCut.ToArray();
@@ -250,9 +278,11 @@ public class VegetationDestruction : MonoBehaviour
     }
 
     // Update triangles index in the specified tree to match new vertices index
-    private void UpdateTreeTriangles(Dictionary<int, int> verticesOldAndNewIndex, List<TreeNode> treeArray, TreeNode parent)
+    private void UpdateTreeTrianglesAndVertex(Dictionary<int, int> verticesOldAndNewIndex, List<TreeNode> treeArray, TreeNode parent, Vector3 toRemoveOnVertex)
     {
         List<int> trianglesNode = parent.cylinder.triangles;
+
+
         for (int i = 0; i < trianglesNode.Count; i++)
         {
             if (verticesOldAndNewIndex.TryGetValue(trianglesNode[i], out int newIndex))
@@ -263,9 +293,16 @@ public class VegetationDestruction : MonoBehaviour
                 throw new Exception("[VegetationDestruction] Missing vertices in cut part");
         }
 
-        foreach (var childIndex in parent.childrenIndex)
+        List<Vector3> vertices = parent.cylinder.vertices;
+        for (int i = 0; i < vertices.Count; i++)
         {
-            UpdateTreeTriangles(verticesOldAndNewIndex, treeArray, treeArray[childIndex]);
+            vertices[i] -= toRemoveOnVertex;
+        }
+
+        for(int i = 0; i < parent.childrenIndex.Count; i ++)
+        {
+            int oldIndex = parent.childrenIndex[i];
+            UpdateTreeTrianglesAndVertex(verticesOldAndNewIndex, treeArray, treeArray[oldIndex], toRemoveOnVertex);
         }
     }
 
