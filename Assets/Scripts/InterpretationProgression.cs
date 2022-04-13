@@ -19,10 +19,25 @@ public class InterpretationProgression : MonoBehaviour
     {
         fullSentence = sentence;
         text.text = sentence;
+
+        // Reset text color
+        for (int i = 0; i < sentence.Length; i++)
+        {
+            int meshIndex = text.textInfo.characterInfo[i].materialReferenceIndex;
+            int vertexIndex = text.textInfo.characterInfo[i].vertexIndex;
+
+            Color32[] vertexColors = text.textInfo.meshInfo[meshIndex].colors32;
+            for (int j = 0; j < 4; j++)
+            {
+                vertexColors[vertexIndex + j] = Color.black;
+            }
+        }
     }
 
     public void InterpretationProgress(int index)
     {
+        if (text.text == "")
+            return;
         for (int i = 0; i < index; i++)
         {
             int meshIndex = text.textInfo.characterInfo[i].materialReferenceIndex;

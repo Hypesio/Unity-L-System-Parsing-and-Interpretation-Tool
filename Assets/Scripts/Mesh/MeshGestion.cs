@@ -15,10 +15,15 @@ public class MeshGestion : MonoBehaviour
 {
     public bool cleanMesh;
     public int cylinderNbFaces = 15;
+    public bool destroyable = true;
+
+    [Header("Debug Options")]
+    public bool enableDebugFeatures;
     public bool waitBetweenEachLetter = false;
+    [Tooltip("Need gizmo activated to be visible")]
+    public float debugTurtleRadius = 0.2f;
     public UnityEvent<string> onStartBuildingMesh;
     public UnityEvent<int> onUpdateBuildingMesh;
-
 
     public Mesh meshGenerated { get; private set; }
 
@@ -31,6 +36,12 @@ public class MeshGestion : MonoBehaviour
     private List<Color32> meshColors;
     private float lengthPolygon;
     private Color32[] colors;
+    private TurtleInfos turtle;
+    private Stack<TurtleInfos> turtleStack;
+
+    public List<TreeNode> treeArray { get; set; }
+
+    #region Classes & structs
 
     class TurtleInfos
     {
@@ -66,9 +77,6 @@ public class MeshGestion : MonoBehaviour
             parentIndex = _parent;
         }
     }
-
-    public List<TreeNode> treeArray;
-
     class Polygon
     {
         public List<int> vertices;
@@ -79,15 +87,18 @@ public class MeshGestion : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Monobehaviour
     void Start()
     {
+        meshFilter = gameObject.GetComponent<MeshFilter>();
         if (!meshGenerated)
         {
-            meshFilter = gameObject.GetComponent<MeshFilter>();
             meshGenerated = meshFilter.sharedMesh;
         }
 
-        if(treeArray == null)
+        if(destroyable)
             LoadTreeData();
     }
 
@@ -102,19 +113,9 @@ public class MeshGestion : MonoBehaviour
         }
 #endif
     }
+    #endregion
 
-    private void InitMesh()
-    {
-        GenerateCylinder.nbFaces = cylinderNbFaces;
-        if (meshGenerated)
-            meshGenerated.Clear();
-        else
-            meshGenerated = new Mesh();
-        meshFilter = gameObject.GetComponent<MeshFilter>();
-        meshFilter.mesh = meshGenerated;
-    }
-
-    // Generate the mesh using DOL-bracket method
+    // Generate the mesh using parametrical bracketed Dol system
     public void GenerateMeshFromSentence(string sentence, float lengthPart, float angleTheta, float radiusBranch,
         float timeBetweenBranch, int _cylinderNbFaces, bool _orientation3D, float decrementRadiusMultiplier,
         Color32[] colors, float _lengthPolygon, bool _flatShape = false)
@@ -141,22 +142,18 @@ public class MeshGestion : MonoBehaviour
         this.colors = colors;
         Vector3[] hlu = new[] {Vector3.up, Vector3.left, Vector3.forward};
         treeArray.Add(new TreeNode(null, -1));
-        TurtleInfos turtle = new TurtleInfos(Vector3.zero, hlu, radiusBranch, 0, treeArray[0]);
+        turtle = new TurtleInfos(Vector3.zero, hlu, radiusBranch, 0, treeArray[0]);
         int leafNumber = 0;
 
-        Stack<TurtleInfos> turtleStack = new Stack<TurtleInfos>();
+        turtleStack = new Stack<TurtleInfos>();
         Polygon actualPolygon = null;
         Stack<Polygon> polygons = new Stack<Polygon>();
 
         for (int i = 0; i < sentence.Length; i++)
         {
-            if (timeBetweenBranch > 0 && waitBetweenEachLetter && Application.isPlaying)
+            if (enableDebugFeatures && timeBetweenBranch > 0 && waitBetweenEachLetter && Application.isPlaying)
             {
-                meshGenerated.vertices = meshVertices.ToArray();
-                meshGenerated.triangles = meshTriangles.ToArray();
-                meshGenerated.colors32 = meshColors.ToArray();
-                meshGenerated.RecalculateNormals();
-                meshFilter.mesh = meshGenerated;
+                UpdateMesh(meshVertices, meshTriangles, meshColors);
                 onUpdateBuildingMesh?.Invoke(i);
                 yield return new WaitForSeconds(timeBetweenBranch);
             }
@@ -279,14 +276,9 @@ public class MeshGestion : MonoBehaviour
                     meshColors.AddRange(Enumerable.Repeat(colors[turtle.indexColor],
                         meshVertices.Count - oldVerticeCount));
 
-                    if (timeBetweenBranch > 0 && Application.isPlaying) // Way to build the mesh progressively
+                    if (!enableDebugFeatures && timeBetweenBranch > 0 && Application.isPlaying) // Way to build the mesh progressively
                     {
-                        meshGenerated.vertices = meshVertices.ToArray();
-                        meshGenerated.triangles = meshTriangles.ToArray();
-                        meshGenerated.colors32 = meshColors.ToArray();
-                        meshGenerated.RecalculateNormals();
-                        meshFilter.mesh = meshGenerated;
-                        onUpdateBuildingMesh?.Invoke(i);
+                        UpdateMesh(meshVertices, meshTriangles, meshColors);
                         yield return new WaitForSeconds(timeBetweenBranch);
                     }
                 }
@@ -338,13 +330,30 @@ public class MeshGestion : MonoBehaviour
         }
 
         // Apply the mesh to make it visible
-        meshGenerated.vertices = meshVertices.ToArray();
-        meshGenerated.triangles = meshTriangles.ToArray();
-        meshGenerated.colors32 = meshColors.ToArray();
-        meshGenerated.RecalculateNormals();
-        meshFilter.mesh = meshGenerated;
+        UpdateMesh(meshVertices, meshTriangles, meshColors);
 
         Debug.Log("[MeshGestion] Mesh created with " + meshTriangles.Count / 3 + " polygons");
+    }
+
+    #region Utils
+    private void UpdateMesh(List<Vector3> vertices, List<int> triangles, List<Color32> colors)
+    {
+        meshGenerated.vertices = vertices.ToArray();
+        meshGenerated.triangles = triangles.ToArray();
+        meshGenerated.colors32 = colors.ToArray();
+        meshGenerated.RecalculateNormals();
+        meshFilter.mesh = meshGenerated;
+    }
+
+    private void InitMesh()
+    {
+        GenerateCylinder.nbFaces = cylinderNbFaces;
+        if (meshGenerated)
+            meshGenerated.Clear();
+        else
+            meshGenerated = new Mesh();
+        meshFilter = gameObject.GetComponent<MeshFilter>();
+        meshFilter.mesh = meshGenerated;
     }
 
     // Draw a polygon by dividing it in triangles
@@ -383,6 +392,32 @@ public class MeshGestion : MonoBehaviour
         poly.vertices.Add(meshVertices.Count - 1);
     }
 
+    #endregion
+
+    #region Debug
+
+    private void OnDrawGizmos()
+    {
+        if (turtle == null)
+            return;
+        Gizmos.color = new Color(0, 0, 200, 0.5f);
+        Gizmos.DrawSphere(transform.position + turtle.position, debugTurtleRadius);
+        if (turtleStack != null && turtleStack.Count != 0)
+        {
+            Gizmos.color = new Color(200, 200, 200, 0.7f);
+            Gizmos.DrawSphere(transform.position + turtleStack.Peek().position, debugTurtleRadius);
+        }
+        Gizmos.color = Color.blue;
+        Gizmos.DrawRay(transform.position + turtle.position, turtle.hlu[0]);
+        Gizmos.color = Color.red;
+        Gizmos.DrawRay(transform.position + turtle.position, turtle.hlu[1]);
+        Gizmos.color = Color.green;
+        Gizmos.DrawRay(transform.position + turtle.position, turtle.hlu[2]);
+    }
+
+    #endregion
+
+    #region Save & Load Functions
     private class TreeSave
     {
         public List<TreeNode> treeArray;
@@ -422,19 +457,31 @@ public class MeshGestion : MonoBehaviour
                              "! (won't be destroyable) | " + e.Message);
         }
     }
+    #endregion
 
-    public static int GenerateNewTreeNodeArray(List<TreeNode> originalTreeNodeArray, List<TreeNode> treeNodeArray, TreeNode actualTree, int parentIndex)
+    #region Static functions
+
+    public static int GenerateNewTreeNodeArray(List<TreeNode> originalTreeNodeArray, List<TreeNode> treeNodeArray, TreeNode actualTree, int parentIndex, bool eraseNodeinOldArray)
     {
+        if (parentIndex == -1 && eraseNodeinOldArray)
+        {
+            int oldIndex = originalTreeNodeArray.FindIndex(t => t == actualTree);
+            originalTreeNodeArray[oldIndex] = null;
+        }
+
         int indexNode = treeNodeArray.Count;
         treeNodeArray.Add(actualTree);
         actualTree.parentIndex = parentIndex;
         for (int i = 0; i < actualTree.childrenIndex.Count; i++)
         {
             int newIndex =
-                GenerateNewTreeNodeArray(originalTreeNodeArray, treeNodeArray, originalTreeNodeArray[actualTree.childrenIndex[i]], indexNode);
+                GenerateNewTreeNodeArray(originalTreeNodeArray, treeNodeArray, originalTreeNodeArray[actualTree.childrenIndex[i]], indexNode, eraseNodeinOldArray);
             actualTree.childrenIndex[i] = newIndex;
+            if (eraseNodeinOldArray)
+                originalTreeNodeArray[actualTree.childrenIndex[i]] = null;
         }
 
         return indexNode;
     }
+    #endregion
 }

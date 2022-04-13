@@ -105,7 +105,7 @@ public class VegetationDestruction : MonoBehaviour
             meshCollider.convex = true;
             MeshGestion newMeshGestion = cutedPart.AddComponent<MeshGestion>();
             newMeshGestion.treeArray = new List<TreeNode>();
-            MeshGestion.GenerateNewTreeNodeArray(nodes, newMeshGestion.treeArray, nodeTouched, -1);
+            MeshGestion.GenerateNewTreeNodeArray(nodes, newMeshGestion.treeArray, nodeTouched, -1, false);
 
             meshGestion.meshGenerated.RecalculateBounds();
             meshGestion.GetComponent<MeshFilter>().sharedMesh = meshGestion.meshGenerated;
@@ -125,9 +125,9 @@ public class VegetationDestruction : MonoBehaviour
         else
         {
             // Update original mesh
-            meshGestion.meshGenerated.RecalculateBounds();
+            /*meshGestion.meshGenerated.RecalculateBounds();
             meshGestion.GetComponent<MeshFilter>().mesh = meshGestion.meshGenerated;
-            meshGestion.GetComponent<MeshCollider>().sharedMesh= meshGestion.meshGenerated;
+            meshGestion.GetComponent<MeshCollider>().sharedMesh= meshGestion.meshGenerated;*/
         }
 
 
@@ -258,7 +258,10 @@ public class VegetationDestruction : MonoBehaviour
     // Search the node parents of the triangle specified
     private TreeNode GetTriangleNode(int[] triangleTouched, List<TreeNode> nodes, TreeNode parent)
     {
-        if (parent.cylinder != null)
+        if (parent == null)
+            return null;
+
+        if (parent.cylinder != null && parent.cylinder.triangles != null)
         {
             List<int> triangles = parent.cylinder.triangles;
             if (FindTriangleInArray(triangles, triangleTouched) != -1)
@@ -280,6 +283,9 @@ public class VegetationDestruction : MonoBehaviour
     // Update triangles index in the specified tree to match new vertices index
     private void UpdateTreeTrianglesAndVertex(Dictionary<int, int> verticesOldAndNewIndex, List<TreeNode> treeArray, TreeNode parent, Vector3 toRemoveOnVertex)
     {
+        if (parent == null)
+            return;
+
         List<int> trianglesNode = parent.cylinder.triangles;
 
 

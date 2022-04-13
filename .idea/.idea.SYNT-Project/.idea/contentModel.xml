@@ -9,8 +9,10 @@
       <e p="Assets" t="Include">
         <e p="Resources" t="Include">
           <e p="Meshes" t="Include">
-            <e p="zaou.json" t="Include" />
-            <e p="zaoubbb.json" t="Include" />
+            <e p="Destruct2_a.json" t="Include" />
+            <e p="Destruct2_b.json" t="Include" />
+            <e p="Destruct3.json" t="Include" />
+            <e p="Destruct3_b.json" t="Include" />
           </e>
         </e>
         <e p="Scripts" t="Include">

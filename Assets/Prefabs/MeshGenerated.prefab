@@ -47,8 +47,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cleanMesh: 0
   cylinderNbFaces: 8
-  meshToLoadOnStart: {fileID: 0}
-  treeArray: []
+  destroyable: 1
+  enableDebugFeatures: 0
+  waitBetweenEachLetter: 0
+  debugTurtleRadius: 0.2
+  onStartBuildingMesh:
+    m_PersistentCalls:
+      m_Calls: []
+  onUpdateBuildingMesh:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!33 &4155065596217719166
 MeshFilter:
   m_ObjectHideFlags: 0
